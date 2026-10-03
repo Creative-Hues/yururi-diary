@@ -6,7 +6,7 @@ export const MOODS = [
   { level: 'good', label: '良い', emoji: '😊' },
   { level: 'normal', label: 'ふつう', emoji: '🙂' },
   { level: 'tough', label: 'しんどい', emoji: '😕' },
-  { level: 'very_tough', label: 'とてもしんどい', emoji: '☹️' },
+  { level: 'very_tough', label: 'とてもしんどい', emoji: '😞' },
 ];
 export const TOUGH_MOODS = ['tough', 'very_tough'];
 export const moodLabel = (level) => MOODS.find((m) => m.level === level)?.label ?? '';
@@ -40,10 +40,8 @@ export const LISTS = {
   hitokotoPrompt: 'hitokoto.prompt',
   calm: 'calm',
   consultTag: 'consult.tag',
+  medTiming: 'medicine.timing',
 };
-
-// 薬の情報:飲むタイミング(いくつでも選べる。choices の薬に timings として名前の配列で持つ)
-export const MED_TIMINGS = ['朝', '昼', '夜', '寝る前', 'とんぷく'];
 
 // 体調の選択肢のうち、カレンダーの帯に出すもの(choices の kind)。名前を変えても kind で見分ける
 export const CHOICE_KINDS = { bowel: 'bowel', period: 'period' };

@@ -57,6 +57,7 @@ export async function renderSettings(el, params, isStale) {
         ${linkRow('edit-mood-emoji')}
         ${linkRow('edit-condition')}
         ${linkRow('edit-medicine')}
+        ${linkRow('edit-med-timings')}
         ${linkRow('edit-diary')}
         ${linkRow('edit-consult-tags')}
         ${linkRow('edit-levels')}

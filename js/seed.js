@@ -5,10 +5,13 @@
 import { withTx, getMeta } from './db.js';
 import { uuid, nowIso } from './util.js';
 
-export const SEED_VERSION = 3;
+export const SEED_VERSION = 4;
 
 // 相談したいことメモの「誰に向けたメモか」のタグ(本人が追加・変更・削除・並び替えできる)
 const INITIAL_CONSULT_TAGS = ['主治医', '看護師さん', '心理士さん', 'ケースワーカーさん'];
+
+// 薬の飲むタイミングの選択肢(本人が追加・変更・削除・並び替えできる)
+const INITIAL_MED_TIMINGS = ['朝', '昼', '夜', '寝る前', 'とんぷく'];
 
 const INITIAL_CHOICES = {
   'condition.body': ['元気', '頭痛', '眠い', 'だるい', '気持ち悪い', 'お腹の調子が悪い', '食欲なし', '動悸'],
@@ -73,6 +76,15 @@ const seeds = {
     };
     INITIAL_CONSULT_TAGS.forEach((label, i) => {
       choices.put({ id: uuid(), list: 'consult.tag', label, order: i, createdAt: t });
+    });
+  },
+
+  // v0.11.0:薬の飲むタイミングの選択肢
+  4(tx) {
+    const t = nowIso();
+    const choices = tx.objectStore('choices');
+    INITIAL_MED_TIMINGS.forEach((label, i) => {
+      choices.put({ id: uuid(), list: 'medicine.timing', label, order: i, createdAt: t });
     });
   },
 };

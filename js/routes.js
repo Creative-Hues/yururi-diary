@@ -10,7 +10,7 @@ import { renderCondition } from './screens/condition.js';
 import { renderMeal, renderMealNew, renderMealEdit } from './screens/meal.js';
 import { renderMedicine, renderMedicineNew, renderMedicineEdit } from './screens/medicine.js';
 import { renderVital, renderVitalNew, renderVitalEdit } from './screens/vital.js';
-import { renderEditCondition, renderEditMedicine, renderEditDiary, renderEditConsultTags, renderCalm } from './screens/edit-choices.js';
+import { renderEditCondition, renderEditMedicine, renderEditDiary, renderEditConsultTags, renderEditMedTimings, renderCalm } from './screens/edit-choices.js';
 import {
   renderDiaryDay, renderDiaryDayNew, renderDiaryDayEdit,
   renderHitokoto, renderHitokotoNew, renderHitokotoEdit,
@@ -79,6 +79,7 @@ export const ROUTES = {
   'edit-medicine': { title: '薬の登録', icon: '💊', render: renderEditMedicine },
   'medicine-new': { title: '薬を登録する', render: renderMedicineNew },
   'medicine-edit': { title: '薬の登録を直す', render: renderMedicineEdit },
+  'edit-med-timings': { title: '飲むタイミングの選択肢', icon: '💊', render: renderEditMedTimings },
   'edit-diary': { title: '日記のお題・書き出し', icon: '📔', render: renderEditDiary },
   'edit-mood-emoji': { title: '気分の絵文字', icon: '😊', render: renderEditMoodEmoji },
   'edit-levels': { title: '整理シートのつらさの名前', icon: '🧺', render: renderEditLevels },

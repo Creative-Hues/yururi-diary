@@ -1159,3 +1159,8 @@ input[type="time"].input { min-width: 0; text-align: left; }
 .med-info-list div { padding: 4px 0; border-top: 1px dashed var(--line); }
 .med-info-list dt { font-size: 0.8rem; font-weight: 700; color: var(--muted); }
 .med-info-list dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+/* 薬の詳細情報:信号機と同じく「・」で始まる行は箇条書き(linesHtml) */
+.med-info-list dd.med-detail { white-space: normal; }
+.med-detail p { margin: 0 0 2px; }
+.med-detail ul { margin: 0; padding-left: 1.3em; }
+.med-detail li { margin-bottom: 2px; }

@@ -1,12 +1,13 @@
 // 服薬の記録(3-4)
 // #/medicine … 飲んだ薬をタップして記録する。薬ごとに「薬の情報」をタップで開いて見られる
-// #/medicine-new・#/medicine-edit/<id> … 薬の登録(名前・上限回数・何のための薬か・1回の量・飲むタイミング・注意・メモ)
+// #/medicine-new・#/medicine-edit/<id> … 薬の登録(名前・1日の上限回数・飲むタイミング・薬の詳細情報)
+// #/edit-med-timings … 飲むタイミングの選択肢の編集(edit-choices.js)
 // 薬の情報は choices の薬そのものに持つので、バックアップに入る。
 
 import { get, getRecordsByType, newRecord, saveRecord } from '../db.js';
 import { getChoices, addChoice, updateChoice } from '../choices.js';
-import { LISTS, MED_TIMINGS } from '../constants.js';
-import { datetimeField, readAt, recItem, timeOf, circled, sortByAt, parseNum, notFoundHtml } from '../components.js';
+import { LISTS } from '../constants.js';
+import { datetimeField, readAt, recItem, timeOf, circled, sortByAt, parseNum, notFoundHtml, linesHtml, insertText, trackCursor } from '../components.js';
 import { numberDoses, countDoses, reachedLimit, countText } from '../doses.js';
 import { editRecordDialog } from '../record-dialog.js';
 import { deleteOneWithConfirm } from './list-editor.js';
@@ -27,7 +28,9 @@ function noteField(note = '') {
 
 export async function renderMedicine(el, params, isStale) {
   const today = dateKey();
-  const [meds, todays] = await Promise.all([getChoices(LISTS.medicine), getRecordsByType('medicine', today, today)]);
+  const [meds, todays, timingChoices] = await Promise.all([
+    getChoices(LISTS.medicine), getRecordsByType('medicine', today, today), getChoices(LISTS.medTiming),
+  ]);
   if (isStale()) return;
   const rerender = () => renderMedicine(el, params, isStale);
 
@@ -50,7 +53,7 @@ export async function renderMedicine(el, params, isStale) {
         ${meds.map((m) => {
           const n = counts.get(m.id) ?? 0;
           const limit = m.limitPerDay ?? null;
-          const info = medInfoHtml(m);
+          const info = medInfoHtml(m, timingChoices);
           return `
             <div class="med-item">
               <button type="button" class="med-btn" data-id="${esc(m.id)}">
@@ -140,27 +143,25 @@ async function recordDose(med) {
 }
 
 // ---- 薬の情報 ----
+// 飲むタイミングの選択肢は choices の 'medicine.timing'(本人が編集できる)。薬には選んだ id だけを持つので、
+// 選択肢の名前を変えると薬の表示も変わり、選択肢を消すと薬から外れる(相談メモのタグと同じ)。
 
-const INFO_FIELDS = [
-  { key: 'purpose', label: '何のための薬か', placeholder: '例:眠れないとき、不安なとき' },
-  { key: 'dose', label: '1回の量', placeholder: '例:1錠、0.5mg' },
-];
-const NOTE_FIELDS = [
-  { key: 'caution', label: '注意すること・副作用のメモ' },
-  { key: 'memo', label: '自由メモ' },
-];
+// 薬に付いている飲むタイミングの名前(選択肢の並び順)
+export function timingLabels(med, timingChoices) {
+  const ids = new Set(med.timings ?? []);
+  return timingChoices.filter((t) => ids.has(t.id)).map((t) => t.label);
+}
 
-// 服薬の画面で開いて見る中身(上限回数のほかに何も登録していなければ '')
-function medInfoHtml(m) {
-  const rows = [
-    ['何のための薬か', m.purpose],
-    ['1回の量', m.dose],
-    ['飲むタイミング', (m.timings ?? []).join('・')],
-    ['注意すること・副作用', m.caution],
-    ['メモ', m.memo],
-  ].filter(([, v]) => v);
-  if (!rows.length) return '';
-  return `<dl class="med-info-list">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
+// 服薬の画面で開いて見る中身(飲むタイミングも詳細情報もなければ '')
+function medInfoHtml(m, timingChoices) {
+  const timings = timingLabels(m, timingChoices);
+  const detail = (m.detail ?? '').trim();
+  if (!timings.length && !detail) return '';
+  return `
+    <dl class="med-info-list">
+      ${timings.length ? `<div><dt>飲むタイミング</dt><dd>${esc(timings.join('・'))}</dd></div>` : ''}
+      ${detail ? `<div><dt>薬の詳細情報</dt><dd class="med-detail">${linesHtml(detail)}</dd></div>` : ''}
+    </dl>`;
 }
 
 export function renderMedicineNew(el, params, isStale) {
@@ -179,9 +180,9 @@ export async function renderMedicineEdit(el, [id], isStale) {
 }
 
 async function medicineForm(el, med, isStale) {
-  const meds = await getChoices(LISTS.medicine);
+  const [meds, timingChoices] = await Promise.all([getChoices(LISTS.medicine), getChoices(LISTS.medTiming)]);
   if (isStale()) return;
-  const timings = new Set(med?.timings ?? []);
+  const picked = new Set(med?.timings ?? []);
 
   el.innerHTML = `
     <div class="card">
@@ -193,26 +194,23 @@ async function medicineForm(el, med, isStale) {
         <span class="field-label">1日の上限回数(空欄なら上限なし)</span>
         <span class="with-unit"><input type="text" class="input" name="limit" inputmode="numeric" autocomplete="off" value="${esc(med?.limitPerDay ?? '')}"><span class="unit">回</span></span>
       </label>
-    </div>
-    <section class="group">
-      <h2 class="section-title">薬の情報(どれも書かなくてOK)</h2>
-      <div class="card">
-        ${INFO_FIELDS.map((f) => `
-          <label class="field">
-            <span class="field-label">${f.label}</span>
-            <input type="text" class="input" name="${f.key}" autocomplete="off" placeholder="${esc(f.placeholder)}" value="${esc(med?.[f.key] ?? '')}">
-          </label>`).join('')}
-        <div class="field">
+      <div class="field">
+        <div class="field-label-row">
           <span class="field-label">飲むタイミング(いくつでも選べます)</span>
-          <div class="chips" data-group="timings">${MED_TIMINGS.map((t) => `<button type="button" class="chip" data-timing="${esc(t)}" aria-pressed="${timings.has(t)}">${esc(t)}</button>`).join('')}</div>
+          <a class="btn btn-small" href="${href('edit-med-timings')}">選択肢を編集</a>
         </div>
-        ${NOTE_FIELDS.map((f) => `
-          <label class="field">
-            <span class="field-label">${f.label}</span>
-            <textarea class="input" name="${f.key}" rows="3">${esc(med?.[f.key] ?? '')}</textarea>
-          </label>`).join('')}
+        ${timingChoices.length
+          ? `<div class="chips" data-group="timings">${timingChoices.map((t) => `<button type="button" class="chip" data-timing="${esc(t.id)}" aria-pressed="${picked.has(t.id)}">${esc(t.label)}</button>`).join('')}</div>`
+          : '<p class="small muted">選択肢がありません。「選択肢を編集」から追加できます。</p>'}
       </div>
-    </section>
+      <div class="field">
+        <div class="field-label-row">
+          <span class="field-label">薬の詳細情報(書かなくてOK)</span>
+          <button type="button" class="btn btn-small bullet-btn">・を入れる</button>
+        </div>
+        <textarea class="input" name="detail" rows="7" placeholder="何のための薬か・1回の量・注意することなど、自由に書けます。「・」で始めると箇条書きになります">${esc(med?.detail ?? '')}</textarea>
+      </div>
+    </div>
     ${med ? '<p class="hint">名前を変えたり削除したりしても、これまでの服薬の記録はそのまま残ります。</p>' : ''}
     <div class="form-actions">
       <button type="button" class="btn btn-primary btn-block" id="save-btn">${med ? '保存する' : '登録する'}</button>
@@ -220,16 +218,19 @@ async function medicineForm(el, med, isStale) {
     </div>
   `;
 
+  const ta = el.querySelector('[name="detail"]');
+  trackCursor(ta);
+  el.querySelector('.bullet-btn').addEventListener('click', () => insertText(ta, '・'));
+
   const chips = [...el.querySelectorAll('[data-group="timings"] .chip')];
   chips.forEach((c) => {
     c.addEventListener('click', () => c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true')));
   });
-  // 選んだタイミングは、MED_TIMINGS の順に並べて保存する
+  // いまある選択肢のうち、選んでいるもの(消した選択肢は外れる)
   const readTimings = () => chips.filter((c) => c.getAttribute('aria-pressed') === 'true').map((c) => c.dataset.timing);
 
-  // 下書き(新しく登録するとき/直すときで別々)
-  const keys = ['label', 'limit', ...INFO_FIELDS.map((f) => f.key), ...NOTE_FIELDS.map((f) => f.key)];
-  const fields = namedFields(el, keys);
+  // 下書き(新しく登録するとき/直すときで別々)。「選択肢を編集」に行って戻っても、書きかけが戻る
+  const fields = namedFields(el, ['label', 'limit', 'detail']);
   const draft = await attachDraft({
     key: med ? `medicine-info:edit:${med.id}` : 'medicine-info:new',
     root: el,
@@ -248,11 +249,7 @@ async function medicineForm(el, med, isStale) {
     if (meds.some((c) => c.label === label && c.id !== med?.id)) return toast('同じ名前の薬がすでにあります');
     const limit = parseNum(v.limit);
     if (limit != null && !(Number.isInteger(limit) && limit > 0)) return toast('上限回数は1以上の数字で入れてね');
-    const info = {
-      limitPerDay: limit,
-      ...Object.fromEntries([...INFO_FIELDS, ...NOTE_FIELDS].map((f) => [f.key, v[f.key].trim()])),
-      timings: readTimings(),
-    };
+    const info = { limitPerDay: limit, timings: readTimings(), detail: v.detail.replace(/\s+$/, '') };
     if (med) await updateChoice({ ...med, label, ...info });
     else await addChoice(LISTS.medicine, label, info);
     await draft.done();
