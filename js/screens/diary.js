@@ -1,9 +1,8 @@
-// 日記(3-6):一日の日記・ひとこと日記・ランダム見返し・お気に入り
+// 日記(3-6):一日の日記・ひとこと日記・お気に入り
 // #/diary-day/<日付>            … 一日の日記を見る画面
 // #/diary-day-new/<日付>        … 書く画面
 // #/diary-day-edit/<id>         … 直す画面
 // (ひとこと日記は diary-hitokoto / -new / -edit)
-// #/diary-random/<種類>/<id>    … ランダム見返し(id を URL に持つので、直して戻っても同じものが出る)
 // #/diary-favorites             … お気に入り一覧
 
 import { get, getAll, getRecordsByType, newRecord, saveRecord } from '../db.js';
@@ -218,77 +217,20 @@ async function allEntries(types = ['diary', 'hitokoto']) {
   return (await Promise.all(types.map((t) => getAll('records', 'type', t)))).flat();
 }
 
-const entryCard = (r, clamp = false) => `
+const entryCard = (r) => `
   <a class="card view-card" href="${href(kindOf(r.type).editRoute, r.id)}">
     <div class="card-head">
       <span class="kind-badge">${kindOf(r.type).short}</span>
       <span class="card-time">${dateTimeLabel(r.at)}${favMark(r)}<span class="chev" aria-hidden="true">›</span></span>
     </div>
     ${promptHtml(r.data.prompt)}
-    <p class="view-text${clamp ? ' clamp' : ''}">${esc(r.data.text)}</p>
+    <p class="view-text clamp">${esc(r.data.text)}</p>
   </a>`;
 
 export async function renderFavorites(el, params, isStale) {
   const rows = (await allEntries()).filter((r) => r.data.favorite).sort((a, b) => b.at.localeCompare(a.at));
   if (isStale()) return;
   el.innerHTML = rows.length
-    ? rows.map((r) => entryCard(r, true)).join('')
+    ? rows.map((r) => entryCard(r)).join('')
     : '<div class="card"><p>まだお気に入りはありません。</p><p class="muted small">日記を書く画面の「☆ お気に入り」で印を付けると、ここに並びます。</p></div>';
-}
-
-// ---- ランダム見返し ----
-
-const FILTERS = [
-  { key: 'all', label: 'すべて', types: ['diary', 'hitokoto'] },
-  { key: 'diary', label: '日記', types: ['diary'] },
-  { key: 'hitokoto', label: 'ひとこと', types: ['hitokoto'] },
-];
-
-export async function renderRandom(el, [filterParam, id], isStale) {
-  const filter = FILTERS.find((f) => f.key === filterParam) ?? FILTERS[0];
-  const all = await allEntries(filter.types);
-  if (isStale()) return;
-  // 「過去の」日記から選ぶ(今日の分しかないときは今日の分から)
-  const past = all.filter((r) => r.date < dateKey());
-  const pool = past.length ? past : all;
-  const pick = (exceptId) => {
-    const choices = pool.filter((r) => r.id !== exceptId);
-    return choices.length ? choices[Math.floor(Math.random() * choices.length)] : null;
-  };
-
-  let rec = all.find((r) => r.id === id);
-  if (!rec && pool.length) {
-    location.replace(href('diary-random', filter.key, pick().id));
-    return;
-  }
-
-  el.innerHTML = `
-    <div class="seg-row seg-row-top">
-      ${FILTERS.map((f) => `<button type="button" class="seg-btn" data-filter="${f.key}" aria-pressed="${f === filter}">${f.label}</button>`).join('')}
-    </div>
-    ${rec ? `
-      ${entryCard(rec)}
-      <div class="form-actions">
-        <button type="button" class="btn btn-primary btn-block" id="next-btn">🎲 もう1つ</button>
-        <button type="button" class="btn btn-block fav-toggle-btn" id="fav-btn" aria-pressed="${!!rec.data.favorite}">${rec.data.favorite ? '★ お気に入りから外す' : '☆ お気に入りにする'}</button>
-      </div>` : '<div class="card"><p>まだ日記がありません。</p><p class="muted small">書いた日記が、ここにランダムで1つずつ出てきます。</p></div>'}
-  `;
-
-  el.querySelectorAll('[data-filter]').forEach((b) => {
-    b.addEventListener('click', () => location.replace(href('diary-random', b.dataset.filter)));
-  });
-  el.querySelector('#next-btn')?.addEventListener('click', () => {
-    const next = pick(rec.id);
-    if (!next) {
-      toast('ほかにはまだありません');
-      return;
-    }
-    location.replace(href('diary-random', filter.key, next.id));
-  });
-  el.querySelector('#fav-btn')?.addEventListener('click', async () => {
-    rec.data.favorite = rec.data.favorite ? 0 : 1;
-    await saveRecord(rec);
-    toast(rec.data.favorite ? 'お気に入りにしました' : 'お気に入りから外しました');
-    renderRandom(el, [filter.key, rec.id], isStale);
-  });
 }

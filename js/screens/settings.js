@@ -54,9 +54,12 @@ export async function renderSettings(el, params, isStale) {
             <button type="button" class="step-btn" data-step="1" aria-label="ふやす">＋</button>
           </div>
         </div>
+        ${linkRow('edit-mood-emoji')}
         ${linkRow('edit-condition')}
         ${linkRow('edit-medicine')}
         ${linkRow('edit-diary')}
+        ${linkRow('edit-consult-tags')}
+        ${linkRow('edit-levels')}
       </div>
     </section>
 

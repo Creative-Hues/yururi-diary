@@ -242,6 +242,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .tile-meal, .tile-calendar { background: var(--peach); }
 .tile-medicine, .tile-report { background: var(--lavender); }
 .tile-vital, .tile-diary { background: var(--sky); }
+.tile-backup { background: var(--surface); }
+.tile-backup.is-due { background: var(--lemon); border-color: #f0dc8f; }
+.tile-sub { font-size: 0.72rem; font-weight: 400; color: var(--muted); }
+.tile-due { padding: 0 8px; border-radius: 999px; background: #fff; font-size: 0.72rem; font-weight: 700; color: #8a6d00; }
+.notice-soft { background: var(--pink-50); border-color: var(--pink-200); }
 
 /* ---- 一覧の行(設定など) ---- */
 .rows { padding: 0; }
@@ -439,6 +444,8 @@ input[type="time"].input { min-width: 0; text-align: left; }
   touch-action: manipulation;
 }
 .mood-btn:active { background: var(--pink-50); }
+.mood-btn { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.mood-emoji { font-size: 1.6rem; line-height: 1; }
 
 /* 選ぶボタン(縦に並ぶ、1つだけ選ぶ) */
 .seg-list { display: grid; gap: 8px; margin-bottom: 16px; }
@@ -675,7 +682,6 @@ input[type="time"].input { min-width: 0; text-align: left; }
 .fav-mark { color: #d9a400; }
 .kind-badge { padding: 1px 10px; border-radius: 999px; background: var(--pink-100); color: var(--pink-700); font-size: 0.75rem; font-weight: 700; }
 .view-text.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; }
-.seg-row-top { margin-bottom: 16px; }
 
 /* ---- 信号機(色はこの機能の中だけで使う) ---- */
 .sig-blue { --sig: #7fb6e6; --sig-ink: #1f3b55; }
@@ -729,16 +735,17 @@ input[type="time"].input { min-width: 0; text-align: left; }
 .field-label-row .field-label { margin: 0; }
 
 /* ---- 相談したいことメモ ---- */
-.consult-card { display: flex; align-items: stretch; gap: 0; margin-bottom: 10px; padding: 0; }
+.consult-card { margin-bottom: 10px; padding: 0; }
+.consult-top { display: flex; align-items: stretch; }
 .consult-main { flex: 1; min-width: 0; padding: 14px 16px; }
-.consult-main:active { background: var(--pink-50); border-radius: var(--radius) 0 0 var(--radius); }
+.consult-main:active { background: var(--pink-50); border-radius: var(--radius) 0 0 0; }
 .consult-main .view-text { margin-bottom: 4px; }
 .check-btn {
   flex: none;
   width: 92px;
   border: 0;
   border-left: 1px solid var(--line);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  border-radius: 0 var(--radius) 0 0;
   background: var(--mint);
   font-size: 0.85rem;
   font-weight: 700;
@@ -752,7 +759,6 @@ input[type="time"].input { min-width: 0; text-align: left; }
 .check-row input { width: 24px; height: 24px; accent-color: var(--pink-500); }
 
 /* ---- 整理シート ---- */
-.level-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
 .level-btn {
   min-height: 48px;
   border: 1px solid var(--pink-200);
@@ -765,7 +771,6 @@ input[type="time"].input { min-width: 0; text-align: left; }
   touch-action: manipulation;
 }
 .level-btn[aria-pressed="true"] { background: var(--pink-300); border-color: var(--pink-500); }
-.level-scale { display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.8rem; color: var(--muted); }
 .ws-row { margin-top: 8px; }
 .ws-label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--muted); }
 .ws-level { display: flex; align-items: center; gap: 4px; }
@@ -795,11 +800,6 @@ input[type="time"].input { min-width: 0; text-align: left; }
   cursor: pointer;
 }
 
-/* ---- 整理シートのつらさ(v0.5.0):1行目「0 つらくない」、2行目 1〜5、3行目 6〜10 ---- */
-.level-grid { grid-template-columns: repeat(5, 1fr); }
-.level-btn.level-zero { grid-column: 1 / -1; }
-.level-scale { justify-content: flex-end; }
-
 /* =========================================================
    フェーズ4:カレンダー・日付ごとの一覧・相談用の表示
    ========================================================= */
@@ -820,25 +820,41 @@ input[type="time"].input { min-width: 0; text-align: left; }
 }
 .cal-wd { text-align: center; font-size: 0.8rem; font-weight: 700; color: var(--muted); padding-bottom: 2px; }
 .cal-cell {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-height: 62px;
-  padding: 4px 3px;
+  min-height: 74px;
+  padding: 3px 3px 0;
   border-radius: 10px;
   background: var(--pink-50);
-  overflow: hidden;
 }
 .cal-cell:active { background: var(--pink-100); }
 .cal-cell.is-blank { background: transparent; }
 .cal-cell.is-future { opacity: 0.55; }
 .cal-cell.is-today { outline: 2px solid var(--pink-500); outline-offset: -2px; background: #fff; }
-.cal-top { display: flex; align-items: baseline; justify-content: space-between; gap: 2px; }
-.cal-num { font-size: 0.9rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cal-cell.is-picked { outline: 2px solid var(--pink-700); outline-offset: -2px; }
+/* 左上に日付、右上に気分の絵文字 */
+.cal-top { display: flex; align-items: flex-start; justify-content: space-between; height: 20px; }
+.cal-num { padding-left: 1px; font-size: 0.85rem; font-weight: 700; line-height: 20px; font-variant-numeric: tabular-nums; }
 .is-sun .cal-num, .cal-wd.is-sun { color: #c0607a; }
 .is-sat .cal-num, .cal-wd.is-sat { color: #5f7fae; }
-.cal-mood { font-size: 0.85rem; color: var(--text); }
-.cal-marks { font-size: 0.62rem; line-height: 1.25; color: var(--muted); letter-spacing: 0.02em; word-break: break-all; }
+.cal-mood { font-size: 1rem; line-height: 20px; }
+/* 日付の下に「お通じ」、その下に「生理」の段。帯はマスのすき間(4px)をこえて隣のマスとつながる。
+   週の端(日曜の左・土曜の右)は、カレンダーの端(マスの余白3px+カレンダーの余白8px)までのばして、次の行に続くように見せる */
+.cal-lane { position: relative; display: block; height: 16px; }
+.band { position: absolute; top: 4px; height: 8px; left: 4px; right: 1px; border-radius: 999px; }
+.band.cont-l { left: -6px; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.band.cont-r { right: -6px; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.band.wrap-l { left: -11px; }
+.band.wrap-r { right: -11px; }
+.band-bowel { background: #e7d3bd; }
+.band-period { background: #f6bfd0; }
+.lane-emoji { position: absolute; left: -1px; top: 50%; transform: translateY(-50%); font-size: 13px; line-height: 1; }
+/* 右下の日記の三角:ひとこと日記(水色・大)の上に、一日の日記(ピンク・小)を重ねる */
+.tri { position: absolute; right: 0; bottom: 0; border-bottom-right-radius: 10px; clip-path: polygon(100% 0, 100% 100%, 0 100%); }
+.tri-hitokoto { width: 22px; height: 22px; background: #a6d6f0; }
+.tri-diary { width: 13px; height: 13px; background: #ee8fb0; }
+.legend-tri { display: inline-block; width: 13px; height: 13px; vertical-align: -1px; clip-path: polygon(100% 0, 100% 100%, 0 100%); }
 .cal-legend { margin-top: 12px; font-size: 0.8rem; color: var(--muted); }
 .cal-legend p { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 4px 6px; }
 .legend-head { font-weight: 700; }
@@ -1048,3 +1064,69 @@ input[type="time"].input { min-width: 0; text-align: left; }
   font-size: 0.9rem;
 }
 .draft-bar .btn { flex: none; }
+
+/* =========================================================
+   v0.9.0:相談メモのタグ・相談後のメモ、整理シートのつらさ、生理、気分の絵文字
+   ========================================================= */
+
+/* ---- 相談したいことメモ:タグ・しぼりこみ ---- */
+.filter-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.filter-chip {
+  min-height: 40px;
+  padding: 6px 14px;
+  border: 1px solid var(--pink-200);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.9rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.filter-chip[aria-pressed="true"] { background: var(--pink-300); border-color: var(--pink-300); font-weight: 700; }
+.tag-list { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
+.tag { padding: 0 8px; border-radius: 999px; background: var(--lavender); font-size: 0.75rem; font-weight: 700; line-height: 1.7; }
+
+/* ---- 相談後のメモ ---- */
+.comments { border-top: 1px solid var(--line); }
+.comment { display: block; padding: 8px 16px; border-bottom: 1px dashed var(--line); }
+.comment:active { background: var(--pink-50); }
+.comment-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.8rem; font-weight: 700; color: var(--muted); }
+.comment-head .chev { font-size: 1.2rem; }
+.comment-text { display: block; white-space: pre-wrap; overflow-wrap: anywhere; }
+.comment-add { display: block; padding: 10px 16px; color: var(--pink-700); font-size: 0.9rem; font-weight: 600; }
+.comment-add:active { background: var(--pink-50); border-radius: 0 0 var(--radius) var(--radius); }
+.consult-quote { background: var(--pink-50); }
+.consult-quote .field-label { margin-bottom: 2px; }
+
+/* ---- 整理シートのつらさ:0〜10 を同じ横幅で縦に11段 ---- */
+.level-list { display: grid; gap: 6px; }
+.level-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 6px 16px; text-align: left; }
+.level-num { flex: none; min-width: 1.4em; text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.level-name { font-size: 1rem; font-weight: 600; overflow-wrap: anywhere; }
+.ws-level-name { margin-left: 4px; font-weight: 700; }
+.level-name-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.level-name-row:first-child { margin-top: 0; }
+.level-name-row .input { flex: 1; min-width: 0; }
+
+/* ---- 体調:生理の「はじまった/おわった」 ---- */
+.period-phase { margin: 10px 0 4px; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--pink-50); }
+
+/* ---- 気分の絵文字 ---- */
+.emoji-row { display: grid; grid-template-columns: 1fr 4.5em auto; align-items: center; gap: 10px; margin-top: 10px; }
+.emoji-row:first-child { margin-top: 0; }
+.emoji-label { font-weight: 600; }
+.emoji-input { padding: 6px; font-size: 1.5rem; text-align: center; }
+
+/* ---- 相談用の表示のカレンダー ---- */
+.rp-calendar .cal-grid { box-shadow: none; }
+.rp-calendar .cal-legend { margin-top: 8px; }
+.rp-consult-tags { margin: 0 0 2px !important; }
+.rp-comments { margin: 4px 0 0; padding: 4px 0 0 12px; list-style: none; border-left: 3px solid var(--pink-100); }
+.rp-comments li { padding: 2px 0; }
+.rp-comments .rp-note { margin-left: 0; }
+
+@media print {
+  .rp-calendar { break-inside: avoid; page-break-inside: avoid; }
+  /* 余白・すき間は画面と同じ(帯をすき間・端までのばす長さが px で決まっているため) */
+  .rp-calendar .cal-grid { border: 0.3mm solid #e8d6dd; }
+  .rp-calendar .cal-legend { font-size: 8pt; }
+}

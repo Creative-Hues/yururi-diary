@@ -5,20 +5,20 @@
 import { renderHome } from './screens/home.js';
 import { renderSettings } from './screens/settings.js';
 import { renderBackup } from './screens/backup.js';
-import { renderMood } from './screens/mood.js';
+import { renderMood, renderEditMoodEmoji } from './screens/mood.js';
 import { renderCondition } from './screens/condition.js';
 import { renderMeal, renderMealNew, renderMealEdit } from './screens/meal.js';
 import { renderMedicine } from './screens/medicine.js';
 import { renderVital, renderVitalNew, renderVitalEdit } from './screens/vital.js';
-import { renderEditCondition, renderEditMedicine, renderEditDiary, renderCalm } from './screens/edit-choices.js';
+import { renderEditCondition, renderEditMedicine, renderEditDiary, renderEditConsultTags, renderCalm } from './screens/edit-choices.js';
 import {
   renderDiaryDay, renderDiaryDayNew, renderDiaryDayEdit,
   renderHitokoto, renderHitokotoNew, renderHitokotoEdit,
-  renderRandom, renderFavorites,
+  renderFavorites,
 } from './screens/diary.js';
 import { renderSignal, renderSignalEdit } from './screens/signal.js';
-import { renderConsult, renderConsultNew, renderConsultEdit } from './screens/consult.js';
-import { renderWorksheet, renderWorksheetNew, renderWorksheetEdit } from './screens/worksheet.js';
+import { renderConsult, renderConsultNew, renderConsultEdit, renderCommentNew, renderCommentEdit } from './screens/consult.js';
+import { renderWorksheet, renderWorksheetNew, renderWorksheetEdit, renderEditLevels } from './screens/worksheet.js';
 import { renderCalendar } from './screens/calendar.js';
 import { renderDay } from './screens/day.js';
 import { renderReport } from './screens/report.js';
@@ -42,7 +42,7 @@ export const ROUTES = {
   // フェーズ3:日記と気持ちの整理
   diary: {
     title: '日記', icon: '📔',
-    children: ['diary-day', 'diary-hitokoto', 'diary-random', 'diary-favorites'],
+    children: ['diary-day', 'diary-hitokoto', 'diary-favorites'],
   },
   'diary-day': { title: '一日の日記', icon: '📝', render: renderDiaryDay },
   'diary-day-new': { title: '一日の日記を書く', render: renderDiaryDayNew },
@@ -50,7 +50,6 @@ export const ROUTES = {
   'diary-hitokoto': { title: 'ひとこと日記', icon: '🌱', render: renderHitokoto },
   'diary-hitokoto-new': { title: 'ひとこと日記を書く', render: renderHitokotoNew },
   'diary-hitokoto-edit': { title: 'ひとこと日記を直す', render: renderHitokotoEdit },
-  'diary-random': { title: 'ランダム見返し', icon: '🎲', render: renderRandom },
   'diary-favorites': { title: 'お気に入り', icon: '⭐', render: renderFavorites },
   signal: { title: '信号機', icon: '🚦', render: renderSignal },
   'signal-edit': { title: '信号機を書きかえる', render: renderSignalEdit },
@@ -61,6 +60,8 @@ export const ROUTES = {
   consult: { title: '相談したいことメモ', icon: '🗒️', render: renderConsult },
   'consult-new': { title: '相談したいことを書く', render: renderConsultNew },
   'consult-edit': { title: '相談したいことを直す', render: renderConsultEdit },
+  'consult-comment-new': { title: '相談後のメモを書く', render: renderCommentNew },
+  'consult-comment-edit': { title: '相談後のメモを直す', render: renderCommentEdit },
   calm: { title: '落ち着くことリスト', icon: '☕', render: renderCalm },
   worksheet: { title: '整理シート', icon: '🧺', render: renderWorksheet },
   'worksheet-new': { title: '整理シートを書く', render: renderWorksheetNew },
@@ -77,6 +78,9 @@ export const ROUTES = {
   'edit-condition': { title: '体調の選択肢', icon: '🍀', render: renderEditCondition },
   'edit-medicine': { title: '薬の登録', icon: '💊', render: renderEditMedicine },
   'edit-diary': { title: '日記のお題・書き出し', icon: '📔', render: renderEditDiary },
+  'edit-mood-emoji': { title: '気分の絵文字', icon: '😊', render: renderEditMoodEmoji },
+  'edit-levels': { title: '整理シートのつらさの名前', icon: '🧺', render: renderEditLevels },
+  'edit-consult-tags': { title: '相談したいことメモのタグ', icon: '🗒️', render: renderEditConsultTags },
   lock: { title: 'ロック', icon: '🔒', render: renderLockSettings },
   feedback: { title: '不具合報告・要望を送る', icon: '✉️', render: renderFeedback },
   'feedback-sent': { title: '送った報告', icon: '📮', render: renderFeedbackSent },

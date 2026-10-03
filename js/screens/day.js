@@ -4,7 +4,9 @@
 // (気分・服薬はこの画面の上でダイアログが開く)。
 
 import { getAll, getRecordsByDate } from '../db.js';
-import { RECORD_KINDS, MEAL_SLOTS, VITAL_FIELDS, moodLabel, moodShort } from '../constants.js';
+import { RECORD_KINDS, MEAL_SLOTS, VITAL_FIELDS, moodLabel } from '../constants.js';
+import { getSettings, moodEmoji } from '../prefs.js';
+import { levelText } from './worksheet.js';
 import { dayNavHtml, bindDayNav, isDateKey, timeOf, recItem, sortByAt, circled, fmtNum } from '../components.js';
 import { numberDoses } from '../doses.js';
 import { conditionSummary } from './condition.js';
@@ -30,10 +32,10 @@ export function vitalSummary(data) {
 const short = (s, n = 60) => (s.length > n ? `${s.slice(0, n)}…` : s);
 
 // 種類ごとの1行(time / main / sub)と、タップしたときの動き
-function rowsFor(type, recs) {
+function rowsFor(type, recs, settings) {
   switch (type) {
     case 'mood':
-      return recs.map((r) => ({ r, time: timeOf(r.at), main: `${moodShort(r.data.level)} ${esc(moodLabel(r.data.level))}`, dialog: editMood }));
+      return recs.map((r) => ({ r, time: timeOf(r.at), main: `${esc(moodEmoji(settings, r.data.level))} ${esc(moodLabel(r.data.level))}`, dialog: editMood }));
     case 'condition':
       return recs.map((r) => ({ r, time: timeOf(r.at), main: esc(conditionSummary(r.data)), to: href('condition', r.id) }));
     case 'meal':
@@ -52,8 +54,8 @@ function rowsFor(type, recs) {
       return recs.map((r) => ({
         r,
         time: timeOf(r.at),
-        main: esc(short(r.data.worry || r.data.ideas || '')) || '(つらさのみ)',
-        sub: r.data.level != null ? `つらさ ${r.data.level}/10` : '',
+        main: esc(levelText(r.data)) || '(メモのみ)',
+        sub: esc(short(r.data.memo ?? '')),
         to: href('worksheet-edit', r.id),
       }));
     case 'consult':
@@ -65,7 +67,7 @@ function rowsFor(type, recs) {
 
 export async function renderDay(el, [dateParam], isStale) {
   const date = isDateKey(dateParam) ? dateParam : dateKey();
-  const [records, consults] = await Promise.all([getRecordsByDate(date), getAll('consults')]);
+  const [records, consults, settings] = await Promise.all([getRecordsByDate(date), getAll('consults'), getSettings()]);
   if (isStale()) return;
 
   const byType = new Map(RECORD_KINDS.map((k) => [k.type, []]));
@@ -79,7 +81,7 @@ export async function renderDay(el, [dateParam], isStale) {
     ${dayNavHtml(date)}
     ${total ? '' : '<p class="empty day-empty">この日の記録はありません</p>'}
     ${RECORD_KINDS.map((k) => {
-      const rows = rowsFor(k.type, byType.get(k.type));
+      const rows = rowsFor(k.type, byType.get(k.type), settings);
       rows.forEach((row) => actions.set(row.r.id, row));
       return `
         <section class="day-sec${rows.length ? '' : ' is-empty'}">

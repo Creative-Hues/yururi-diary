@@ -1,12 +1,12 @@
 // 記録の種類ごとの決まった値
 
-// 気分の5段階(色は付けない)。short はカレンダーなどの短い表示用(フェーズ4)
+// 気分の5段階(色は付けない)。emoji は初期の絵文字(本人が設定で変えられる。prefs.js の moodEmoji)
 export const MOODS = [
-  { level: 'great', label: 'とても良い', short: '◎' },
-  { level: 'good', label: '良い', short: '○' },
-  { level: 'normal', label: 'ふつう', short: '−' },
-  { level: 'tough', label: 'しんどい', short: '△' },
-  { level: 'very_tough', label: 'とてもしんどい', short: '▲' },
+  { level: 'great', label: 'とても良い', emoji: '🥰' },
+  { level: 'good', label: '良い', emoji: '☺️' },
+  { level: 'normal', label: 'ふつう', emoji: '🙂' },
+  { level: 'tough', label: 'しんどい', emoji: '😕' },
+  { level: 'very_tough', label: 'とてもしんどい', emoji: '☹️' },
 ];
 export const TOUGH_MOODS = ['tough', 'very_tough'];
 export const moodLabel = (level) => MOODS.find((m) => m.level === level)?.label ?? '';
@@ -39,23 +39,32 @@ export const LISTS = {
   hitokotoStarter: 'hitokoto.starter',
   hitokotoPrompt: 'hitokoto.prompt',
   calm: 'calm',
+  consultTag: 'consult.tag',
 };
+
+// 体調の選択肢のうち、カレンダーの帯に出すもの(choices の kind)。名前を変えても kind で見分ける
+export const CHOICE_KINDS = { bowel: 'bowel', period: 'period' };
+export const PERIOD_PHASES = [
+  { phase: 'start', label: 'はじまった' },
+  { phase: 'end', label: 'おわった' },
+];
+export const periodPhaseLabel = (phase) => PERIOD_PHASES.find((p) => p.phase === phase)?.label ?? '';
+// 生理が「はじまった」からこの日数たっても「おわった」がなければ、ホームでやさしく知らせる
+export const PERIOD_REMIND_DAYS = 10;
 
 // 整理シートのつらさ
 export const LEVEL_MIN = 0;
 export const LEVEL_MAX = 10;
 
-// カレンダーの印・日付ごとの一覧に出す種類(この順に並ぶ)
-// mark:カレンダーのマスに出す1文字(気分は記号で出すので無し)
+// 日付ごとの一覧に出す種類(この順に並ぶ)
 export const RECORD_KINDS = [
   { type: 'mood', label: '気分' },
-  { type: 'condition', label: '体調', mark: '体' },
-  { type: 'meal', label: '食事', mark: '食' },
-  { type: 'medicine', label: '服薬', mark: '薬' },
-  { type: 'vital', label: 'バイタル', mark: 'バ' },
-  { type: 'diary', label: '一日の日記', mark: '日' },
-  { type: 'hitokoto', label: 'ひとこと日記', mark: 'ひ' },
-  { type: 'worksheet', label: '整理シート', mark: '整' },
-  { type: 'consult', label: '相談したいことメモ', mark: '相' },
+  { type: 'condition', label: '体調' },
+  { type: 'meal', label: '食事' },
+  { type: 'medicine', label: '服薬' },
+  { type: 'vital', label: 'バイタル' },
+  { type: 'diary', label: '一日の日記' },
+  { type: 'hitokoto', label: 'ひとこと日記' },
+  { type: 'worksheet', label: '整理シート' },
+  { type: 'consult', label: '相談したいことメモ' },
 ];
-export const moodShort = (level) => MOODS.find((m) => m.level === level)?.short ?? '';

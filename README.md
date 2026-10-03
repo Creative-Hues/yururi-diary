@@ -22,6 +22,8 @@ js/prefs.js            設定値の読み書き
 js/backup.js           バックアップの書き出し・読み込み
 js/pwa.js              Service Worker 登録・更新・ホーム画面に追加
 js/ui.js               ヘッダー・トースト・確認ダイアログ
+js/periods.js          体調の記録から、お通じの日・生理の期間を求める
+js/month-calendar.js   月のカレンダーのマス(カレンダー・相談用の表示で共通)
 js/screens/*.js        各画面
 icons/                 アイコン(tools/make-icons.mjs で作成)
 ```

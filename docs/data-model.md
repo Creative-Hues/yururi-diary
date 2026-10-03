@@ -25,7 +25,7 @@
 | `draft:<画面>:new` / `draft:<画面>:edit:<id>` | 入力画面の下書き `{ value, savedAt }`(js/drafts.js)。新しく記録するときと直すときで別。保存・削除で消える。信号機は `draft:signal:edit:<色>` |
 | `installedAt` | 初回起動日時(ISO) |
 | `seedVersion` | 初期データをどこまで入れたか |
-| `lastBackupAt` | 最後にバックアップした日時(ISO) |
+| `lastBackupAt` | 最後にバックアップした日時(ISO)。ホームの「バックアップ」のブロックに出し、1か月以上たったら(まだ取っていなければ、`installedAt` から1か月)注意を出す |
 | `lock` | ロックの設定 `{ enabled, hash, salt, iterations, credentialId, timeoutMin, failCount, waitUntil }`(説明は docs/lock.md) |
 
 ## settings
@@ -35,6 +35,8 @@
 | key | 初期値 | 内容 |
 |---|---|---|
 | `vitalsPerDay` | 3 | バイタルの1日の測定回数(1〜6) |
+| `moodEmojis` | `{}` | 気分の絵文字。`{ level: 絵文字 }` で、初期(🥰☺️🙂😕☹️、`js/constants.js` の `MOODS`)から変えた段階だけ入る。気分のボタン・カレンダーなどに出す |
+| `levelNames` | 0「つらくない」・10「とてもつらい」、1〜9は空欄 | 整理シートのつらさ 0〜10 の名前(11個の配列) |
 
 ## records(中心となるストア)
 
@@ -63,18 +65,25 @@
 | type | フェーズ | data |
 |---|---|---|
 | `mood` | 2 | `{ level }` … `"great"` / `"good"` / `"normal"` / `"tough"` / `"very_tough"` |
-| `condition` | 2 | `{ body: [{id, label}], mind: [{id, label}], bodyOther, mindOther }` |
+| `condition` | 2 | `{ body: [{id, label, kind?, phase?}], mind: [{id, label}], bodyOther, mindOther }`(kind・phase は下の「お通じ・生理」) |
 | `meal` | 2 | `{ slot, text }` … slot は `"breakfast"` / `"lunch"` / `"dinner"`(食事1回が1件。同じ「昼」が2件あってもよい) |
 | `medicine` | 2 | `{ medicineId, name, note }`(1回飲むごとに1件) |
 | `vital` | 2 | `{ temp, bpHigh, bpLow, pulse, spo2, weight }`(測定1回が1件。空の項目は null。「1回目」「2回目」は保存せず、その日の時刻順で数える。v0.2.0 の記録に残る `slot` は使わない) |
 | `diary` | 3 | `{ text, prompt, favorite: 0\|1 }`(prompt はひいたお題の文。なければ空) |
 | `hitokoto` | 3 | `{ text, prompt, favorite: 0\|1 }` |
-| `worksheet` | 3 | `{ worry, level: 0〜10 または null, ideas }`(どれか1つあれば保存できる) |
+| `worksheet` | 3 | `{ level: 0〜10 または null, levelName, memo }`(つらさか詳細メモのどちらかがあれば保存できる。levelName は選んだときのつらさの名前。v0.9.0 で worry・ideas をやめて memo 1つにした) |
 
 - 選んだ選択肢は `{id, label}` の形で名前も一緒に残す(あとで選択肢を消したり名前を変えても、過去の記録の表示が変わらない)。
 - **服薬の①②の番号は保存しない**。表示のたびに「その日・同じ薬・時刻順」で数えるので、時刻を編集すると自動で並び直る。
 - 1日の上限回数は `choices` の薬の側に持つ。
 - `favorite` は 0/1(IndexedDB は true/false をインデックスにできないため)。
+
+### お通じ・生理(v0.9.0)
+
+- 体調(身体)の選択肢のうち、`kind` を持つものはカレンダーの帯に出す。`kind: "bowel"`(お通じ)/ `kind: "period"`(生理)。名前を変えても kind で見分ける。
+- 記録の `body` の項目にも `kind` を残す。生理は `phase: "start"`(はじまった)/ `"end"`(おわった)も持つ(どちらかを選ばないと保存できない)。
+- 生理の期間(`js/periods.js`):「はじまった」から「おわった」まで。「おわった」がまだなければ今日まで。おわる前にもう一度「はじまった」があれば、前の期間はその前の日まで。「はじまった」のない「おわった」は使わない。
+- 「はじまった」から10日以上(`PERIOD_REMIND_DAYS`)たっても「おわった」がなければ、ホームでやさしく知らせる。
 
 ## choices(本人が編集できる一覧)
 
@@ -84,12 +93,13 @@
 
 | list | 中身 | 初期データ |
 |---|---|---|
-| `condition.body` | 体調(身体) | 8件 |
+| `condition.body` | 体調(身体)。お通じ・生理は `kind` を持つ | 10件 |
 | `condition.mind` | 体調(心) | 12件 |
 | `diary.starter` / `diary.prompt` | 一日の日記の書き出し・お題 | 4件 / 4件 |
 | `hitokoto.starter` / `hitokoto.prompt` | ひとこと日記の書き出し・お題 | 3件 / 6件 |
 | `calm` | 落ち着くことリスト | 空 |
 | `medicine` | 薬。`limitPerDay`(数値 or null=上限なし)を追加で持つ | 空 |
+| `consult.tag` | 相談したいことメモのタグ(誰に向けたメモか) | 主治医 / 看護師さん / 心理士さん / ケースワーカーさん |
 
 並び順は `order`。並び替えたら 0,1,2… と振り直す。
 
@@ -104,8 +114,16 @@ color は `blue` / `yellow` / `red` / `black` の4件固定。`state` / `action`
 ## consults(相談したいことメモ)
 
 ```js
-{ id: "uuid", text, at: "YYYY-MM-DDTHH:mm", createdAt: "ISO", updatedAt: "ISO", done: 0|1, doneAt: "ISO" | null }
+{
+  id: "uuid", text, at: "YYYY-MM-DDTHH:mm", createdAt: "ISO", updatedAt: "ISO", done: 0|1, doneAt: "ISO" | null,
+  tags: ["タグのid"],          // choices の consult.tag(いくつでも)
+  comments: [{ id, text, at: "YYYY-MM-DDTHH:mm", createdAt, updatedAt }]  // 相談後のメモ
+}
 ```
+
+- `tags` は id だけを持つ(ほかの選択肢とちがい名前は残さない)。タグの名前を変えるとすべてのメモの表示が変わり、タグを消すとメモから外れる。
+- `comments`(相談後のメモ)は何件でも。日時は本人が直せる。書いても `done` は変えない(「✓ 相談した」で切り替える)。
+- v0.9.0 より前のメモには `tags`・`comments` がない(無いときは空として扱う)。
 
 - `at` は書いた日時(本人が直せる)。
 - 未相談・相談済みで分けて見るものなので、records とは別のストアにしている。
@@ -116,6 +134,7 @@ color は `blue` / `yellow` / `red` / `black` の4件固定。`state` / `action`
 - 一度入れたら二度と入れない(本人が消した選択肢を勝手に戻さないため)。
 - 後のフェーズで初期データを足すときは `SEED_VERSION` を上げて `seeds` に追加する。
 - seed 2(v0.3.0):身体の「お腹」を「お腹の調子が悪い」に変更。名前が「お腹」のままのものだけ変える。これまでの記録に残っている名前は変えない。
+- seed 3(v0.9.0):身体の最後に「お通じ」(kind: bowel)・「生理」(kind: period)を追加。相談したいことメモのタグ4件を追加。
 
 ## 構造を変えるとき(js/db.js)
 

@@ -1,6 +1,7 @@
 // 相談用の表示(3-10)
 // #/report/day/<日付>  … 1日分
 // #/report/week/<日付> … 1週間分(その日までの7日間)
+// いちばん上に、選んだ日がある月のカレンダー(カレンダーの画面と同じ表示。期間の日は枠で囲む)。
 // 診察で画面をそのまま見せられるよう、項目ごとに枠でまとめる。
 // 「印刷・PDFで保存」はブラウザの印刷機能を使う(印刷用の見た目は css の @media print)。
 
@@ -10,6 +11,10 @@ import { MOODS, LISTS, moodLabel } from '../constants.js';
 import { isDateKey, shiftDate, timeOf, sortByAt, circled, fmtNum } from '../components.js';
 import { weekChart, autoScale } from '../charts.js';
 import { numberDoses } from '../doses.js';
+import { loadMonth, monthGridHtml, legendHtml } from '../month-calendar.js';
+import { moodEmoji } from '../prefs.js';
+import { choiceText } from './condition.js';
+import { consultTagLabels, sortComments } from './consult.js';
 import { href } from '../router.js';
 import { APP_SHORT_NAME, APP_VERSION } from '../config.js';
 import { dateKey, esc, formatDateJa, formatDateTimeJa, parseLocalDateTime } from '../util.js';
@@ -28,10 +33,10 @@ function section(title, body, note = '') {
 }
 
 // ---- 気分 ----
-function moodSection(recs, days, isWeek) {
+function moodSection(recs, days, isWeek, settings) {
   if (!recs.length) return section('気分', none());
   if (!isWeek) {
-    return section('気分', `<ul class="rp-times">${recs.map((r) => `<li><span class="rp-time">${timeOf(r.at)}</span>${esc(moodLabel(r.data.level))}</li>`).join('')}</ul>`);
+    return section('気分', `<ul class="rp-times">${recs.map((r) => `<li><span class="rp-time">${timeOf(r.at)}</span>${esc(moodEmoji(settings, r.data.level))} ${esc(moodLabel(r.data.level))}</li>`).join('')}</ul>`);
   }
   const chart = weekChart({
     days,
@@ -56,14 +61,14 @@ function conditionSection(recs, isWeek) {
       <div class="rp-entry">
         <span class="rp-time">${timeOf(r.at)}</span>
         <div>${groups.map(([k, t]) => {
-          const items = [...(r.data[k] ?? []).map((c) => c.label), r.data[`${k}Other`]].filter(Boolean);
+          const items = [...(r.data[k] ?? []).map(choiceText), r.data[`${k}Other`]].filter(Boolean);
           return items.length ? `<p><span class="rp-tag">${t}</span>${esc(items.join('・'))}</p>` : '';
         }).join('')}</div>
       </div>`).join(''));
   }
   const body = groups.map(([k, t]) => {
     const counts = new Map();
-    for (const r of recs) for (const c of r.data[k] ?? []) counts.set(c.label, (counts.get(c.label) ?? 0) + 1);
+    for (const r of recs) for (const c of r.data[k] ?? []) counts.set(choiceText(c), (counts.get(choiceText(c)) ?? 0) + 1);
     const others = recs.filter((r) => r.data[`${k}Other`]).map((r) => `${shortDay(r.date)} ${r.data[`${k}Other`]}`);
     const sorted = [...counts].sort((a, b) => b[1] - a[1]);
     return `
@@ -152,10 +157,21 @@ function vitalSection(recs, days, isWeek) {
 }
 
 // ---- 相談したいことメモ(未相談) ----
-function consultSection(consults) {
+function consultSection(consults, tags) {
   const open = consults.filter((c) => !c.done).sort((a, b) => a.at.localeCompare(b.at));
+  const item = (c) => {
+    const labels = consultTagLabels(c, tags);
+    const comments = sortComments(c.comments);
+    return `
+      <li>
+        ${labels.length ? `<p class="rp-consult-tags">${labels.map((l) => `<span class="rp-tag">${esc(l)}</span>`).join('')}</p>` : ''}
+        <p>${esc(c.text)}</p>
+        <span class="rp-note">${dayLabel(c.at.slice(0, 10))}に書いたメモ</span>
+        ${comments.length ? `<ul class="rp-comments">${comments.map((m) => `<li><span class="rp-note">相談後のメモ ${shortDay(m.at.slice(0, 10))} ${timeOf(m.at)}</span><p>${esc(m.text)}</p></li>`).join('')}</ul>` : ''}
+      </li>`;
+  };
   return section('相談したいこと', open.length
-    ? `<ol class="rp-consults">${open.map((c) => `<li><p>${esc(c.text)}</p><span class="rp-note">${dayLabel(c.at.slice(0, 10))}に書いたメモ</span></li>`).join('')}</ol>`
+    ? `<ol class="rp-consults">${open.map(item).join('')}</ol>`
     : none('いまはありません'), '期間に関係なく、まだ相談していないもの');
 }
 
@@ -163,8 +179,9 @@ export async function renderReport(el, [modeParam, dateParam], isStale) {
   const isWeek = modeParam === 'week';
   const date = isDateKey(dateParam) ? dateParam : dateKey();
   const days = isWeek ? Array.from({ length: 7 }, (_, i) => shiftDate(date, i - 6)) : [date];
-  const [records, consults, meds] = await Promise.all([
-    getRecordsInRange(days[0], date), getAll('consults'), getChoices(LISTS.medicine),
+  const [y, m] = date.split('-').map(Number);
+  const [records, consults, meds, tags, month] = await Promise.all([
+    getRecordsInRange(days[0], date), getAll('consults'), getChoices(LISTS.medicine), getChoices(LISTS.consultTag), loadMonth(y, m),
   ]);
   if (isStale()) return;
 
@@ -191,11 +208,16 @@ export async function renderReport(el, [modeParam, dateParam], isStale) {
         <p class="rp-period">${period}</p>
         <p class="rp-made">${esc(APP_SHORT_NAME)}(${esc(APP_VERSION)})・${formatDateTimeJa(new Date())} 作成</p>
       </header>
-      ${moodSection(of('mood'), days, isWeek)}
+      <section class="rp-section rp-calendar">
+        <h2 class="rp-title">${y}年${m}月のカレンダー<span class="rp-note">枠で囲んだ日がこのまとめの期間</span></h2>
+        ${monthGridHtml(month, { link: false, picked: new Set(days), markToday: false })}
+        ${legendHtml(month.settings)}
+      </section>
+      ${moodSection(of('mood'), days, isWeek, month.settings)}
       ${conditionSection(of('condition'), isWeek)}
       ${medicineSection(of('medicine'), meds, days, isWeek)}
       ${vitalSection(of('vital'), days, isWeek)}
-      ${consultSection(consults)}
+      ${consultSection(consults, tags)}
     </article>
 
     <div class="no-print form-actions">

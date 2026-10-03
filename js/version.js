@@ -2,4 +2,4 @@
 // ※ 公開するたびに必ず数字を上げること。sw.js もこの値でキャッシュを切り替えるため、
 //    上げ忘れると Pixel / iPhone に新しい版が届きません。
 // 通常の <script> と Service Worker(importScripts)の両方から読むため、ES module にはしない。
-self.APP_VERSION = '0.8.0';
+self.APP_VERSION = '0.9.0';

@@ -5,7 +5,10 @@
 import { withTx, getMeta } from './db.js';
 import { uuid, nowIso } from './util.js';
 
-export const SEED_VERSION = 2;
+export const SEED_VERSION = 3;
+
+// 相談したいことメモの「誰に向けたメモか」のタグ(本人が追加・変更・削除・並び替えできる)
+const INITIAL_CONSULT_TAGS = ['主治医', '看護師さん', '心理士さん', 'ケースワーカーさん'];
 
 const INITIAL_CHOICES = {
   'condition.body': ['元気', '頭痛', '眠い', 'だるい', '気持ち悪い', 'お腹の調子が悪い', '食欲なし', '動悸'],
@@ -55,6 +58,22 @@ const seeds = {
       if (cur.value.label === 'お腹') cur.update({ ...cur.value, label: 'お腹の調子が悪い' });
       cur.continue();
     };
+  },
+
+  // v0.9.0:身体に「お通じ」「生理」(カレンダーの帯に出すので kind を持つ)、相談したいことメモのタグ
+  3(tx) {
+    const t = nowIso();
+    const choices = tx.objectStore('choices');
+    const req = choices.index('list').getAll('condition.body');
+    req.onsuccess = () => {
+      let order = Math.max(-1, ...req.result.map((c) => c.order)) + 1;
+      for (const [label, kind] of [['お通じ', 'bowel'], ['生理', 'period']]) {
+        choices.put({ id: uuid(), list: 'condition.body', label, kind, order: order++, createdAt: t });
+      }
+    };
+    INITIAL_CONSULT_TAGS.forEach((label, i) => {
+      choices.put({ id: uuid(), list: 'consult.tag', label, order: i, createdAt: t });
+    });
   },
 };
 

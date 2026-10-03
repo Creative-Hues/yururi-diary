@@ -7,9 +7,16 @@ import { parseNum } from '../components.js';
 import { openDialog, confirmDialog, toast } from '../ui.js';
 import { esc } from '../util.js';
 
-// sections: [{ list, title, itemName, withLimit }]
+// kind を持つ選択肢(体調の「お通じ」「生理」)の説明
+const KIND_NOTES = {
+  bowel: 'カレンダーに 💩 と帯で出ます',
+  period: 'カレンダーに 🌸 と帯で出ます',
+};
+
+// sections: [{ list, title, itemName, withLimit, editNote, deleteNote }]
 //   itemName … ダイアログの見出しに使う呼び名(例:「選択肢」「薬」)
 //   withLimit … 薬の「1日の上限回数」欄を出す
+//   editNote / deleteNote … 編集・削除のダイアログの説明(初期は「これまでの記録は残ります」)
 export async function renderListEditor(el, sections, isStale, note = '') {
   const lists = await Promise.all(sections.map((s) => getChoices(s.list)));
   if (isStale()) return;
@@ -25,6 +32,7 @@ export async function renderListEditor(el, sections, isStale, note = '') {
             <div class="row edit-row" data-id="${esc(c.id)}">
               <button type="button" class="edit-main" data-act="edit">
                 ${esc(c.label)}
+                ${c.kind && KIND_NOTES[c.kind] ? `<span class="rec-sub">${KIND_NOTES[c.kind]}</span>` : ''}
                 ${s.withLimit ? `<span class="rec-sub">${c.limitPerDay != null ? `1日${c.limitPerDay}回まで` : '上限なし'}</span>` : ''}
               </button>
               <button type="button" class="drag-handle" aria-label="${esc(c.label)}を並び替え(つかんで上下に動かす)">≡</button>
@@ -82,7 +90,7 @@ async function editItem(s, items, item) {
         <input type="text" class="input" name="label" autocomplete="off" value="${esc(item?.label ?? '')}">
       </label>
       ${limitField}
-      ${item ? '<p class="hint">名前を変えたり削除したりしても、これまでの記録はそのまま残ります。</p>' : ''}`,
+      ${item ? `<p class="hint">${esc(s.editNote ?? '名前を変えたり削除したりしても、これまでの記録はそのまま残ります。')}</p>` : ''}`,
     buttons: [
       ...(item ? [{ label: '削除', value: 'delete', cls: 'btn-ghost-danger' }] : []),
       { label: 'やめる' },
@@ -112,7 +120,7 @@ async function editItem(s, items, item) {
   if (value === 'delete') {
     const ok = await confirmDialog({
       title: `「${item.label}」を削除しますか?`,
-      message: 'これまでの記録は残ります。',
+      message: (s.deleteNote ?? 'これまでの記録は残ります。') + (item.kind && KIND_NOTES[item.kind] ? '\n削除すると、カレンダーには出なくなります。' : ''),
       ok: '削除する',
       danger: true,
     });

@@ -27,6 +27,15 @@ export function renderEditDiary(el, params, isStale) {
   ], isStale, HINT);
 }
 
+// 相談したいことメモのタグ(メモは id でタグを持つので、名前を変えるとメモの表示も変わる)
+export function renderEditConsultTags(el, params, isStale) {
+  return renderListEditor(el, [
+    { list: LISTS.consultTag, title: '', itemName: 'タグ',
+      editNote: '名前を変えると、このタグが付いたメモの表示も変わります。',
+      deleteNote: 'このタグが付いたメモから、タグが外れます(メモは残ります)。' },
+  ], isStale, '「誰に向けたメモか」を分けるタグです。' + HINT);
+}
+
 // 落ち着くことリスト(3-8)
 export function renderCalm(el, params, isStale) {
   return renderListEditor(el, [

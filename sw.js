@@ -50,6 +50,8 @@ const ASSETS = [
   './js/screens/consult.js',
   './js/screens/worksheet.js',
   './js/charts.js',
+  './js/periods.js',
+  './js/month-calendar.js',
   './js/screens/calendar.js',
   './js/screens/day.js',
   './js/screens/report.js',
