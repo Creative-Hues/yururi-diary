@@ -24,6 +24,7 @@
 | `installedAt` | 初回起動日時(ISO) |
 | `seedVersion` | 初期データをどこまで入れたか |
 | `lastBackupAt` | 最後にバックアップした日時(ISO) |
+| `lock` | ロックの設定 `{ enabled, hash, salt, iterations, credentialId, timeoutMin, failCount, waitUntil }`(説明は docs/lock.md) |
 
 ## settings
 
@@ -32,7 +33,6 @@
 | key | 初期値 | 内容 |
 |---|---|---|
 | `vitalsPerDay` | 3 | バイタルの1日の測定回数(1〜6) |
-| `lockEnabled` | false | ロック(フェーズ5) |
 
 ## records(中心となるストア)
 

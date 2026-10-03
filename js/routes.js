@@ -22,6 +22,7 @@ import { renderWorksheet, renderWorksheetNew, renderWorksheetEdit } from './scre
 import { renderCalendar } from './screens/calendar.js';
 import { renderDay } from './screens/day.js';
 import { renderReport } from './screens/report.js';
+import { renderLockSettings } from './screens/lock.js';
 
 export const ROUTES = {
   '': { title: 'ホーム', render: renderHome },
@@ -75,6 +76,6 @@ export const ROUTES = {
   'edit-condition': { title: '体調の選択肢', icon: '🍀', render: renderEditCondition },
   'edit-medicine': { title: '薬の登録', icon: '💊', render: renderEditMedicine },
   'edit-diary': { title: '日記のお題・書き出し', icon: '📔', render: renderEditDiary },
-  lock: { title: 'ロック', icon: '🔒', phase: 5 },
+  lock: { title: 'ロック', icon: '🔒', render: renderLockSettings },
   feedback: { title: '不具合報告・要望', icon: '✉️', phase: 6 },
 };

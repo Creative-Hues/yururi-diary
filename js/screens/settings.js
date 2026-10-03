@@ -2,6 +2,7 @@
 
 import { APP_VERSION, FEATURES } from '../config.js';
 import { DB_VERSION, getMeta } from '../db.js';
+import { getLock } from '../lock.js';
 import { getSettings, setSetting, VITALS_PER_DAY_MIN, VITALS_PER_DAY_MAX } from '../prefs.js';
 import { href } from '../router.js';
 import { ROUTES } from '../routes.js';
@@ -20,8 +21,8 @@ function isIOS() {
 }
 
 export async function renderSettings(el, params, isStale) {
-  const [settings, lastBackupAt, persisted, anonId] = await Promise.all([
-    getSettings(), getMeta('lastBackupAt'), isPersisted(), getMeta('anonId'),
+  const [settings, lastBackupAt, persisted, anonId, lock] = await Promise.all([
+    getSettings(), getMeta('lastBackupAt'), isPersisted(), getMeta('anonId'), getLock(),
   ]);
   if (isStale()) return;
 
@@ -65,7 +66,7 @@ export async function renderSettings(el, params, isStale) {
     <section class="group">
       <h2 class="section-title">安心のために</h2>
       <div class="card rows">
-        ${linkRow('lock')}
+        ${linkRow('lock', `<br><span class="small muted">${lock.enabled ? `オン${lock.credentialId ? '(指紋認証あり)' : ''}` : 'オフ'}</span>`)}
         ${FEATURES.feedback ? linkRow('feedback') : ''}
       </div>
     </section>

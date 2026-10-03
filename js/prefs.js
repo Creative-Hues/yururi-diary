@@ -5,7 +5,6 @@ import { getAll, put } from './db.js';
 
 export const DEFAULT_SETTINGS = {
   vitalsPerDay: 3, // バイタルの1日の測定回数
-  lockEnabled: false, // ロック(フェーズ5)
 };
 
 export const VITALS_PER_DAY_MIN = 1;
