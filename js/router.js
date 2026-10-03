@@ -62,6 +62,22 @@ export function guardLeave(isDirty) {
 
   return {
     release,
+    // guard を外し、いまの画面を hash の画面に置きかえる(送信後に別の画面へ移るとき)
+    replaceWith(hash) {
+      release();
+      return new Promise((resolve) => {
+        let settled = false;
+        const done = () => {
+          if (settled) return;
+          settled = true;
+          location.replace(hash);
+          resolve();
+        };
+        window.addEventListener('popstate', done, { once: true });
+        setTimeout(done, 800);
+        history.back();
+      });
+    },
     // 入力画面と guard の2つ分戻る。
     // 戻った先が okHash と同じ画面の別の日(日時を直したとき)か、ホーム(入力画面を直接開いていたとき)なら、
     // okHash に置き換える。お気に入り一覧など別の画面から来ていたら、そこに戻る。

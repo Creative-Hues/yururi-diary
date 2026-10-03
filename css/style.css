@@ -1001,3 +1001,35 @@ input[type="time"].input { min-width: 0; text-align: left; }
 .info-row { align-items: flex-start; }
 .info-value { flex: none; max-width: 40%; text-align: right; font-weight: 700; color: var(--pink-700); }
 .info-copy { flex-direction: column; align-items: stretch; gap: 6px; }
+/* ドキッとさせないよう、説明文と同じ落ち着いた色・太さ */
+.info-value.is-soft { font-weight: 400; font-size: 0.85rem; color: var(--muted); }
+
+/* ---- ロック画面「パスコードを忘れたら」 ---- */
+.lock-forgot { align-self: center; margin-top: 4px; font-size: 0.9rem; }
+.lock-guide { justify-content: flex-start; max-width: 520px; }
+.forgot { line-height: 1.8; }
+.forgot-title { margin: 0 0 8px; font-size: 1.2rem; color: var(--pink-700); }
+.forgot p { margin: 0 0 8px; }
+.forgot-box { margin: 12px 0; padding: 12px 14px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line); }
+.forgot-box ul { margin: 0; padding-left: 1.2em; }
+.forgot-box li + li { margin-top: 6px; }
+.forgot-step-head { font-weight: 700; margin-bottom: 4px !important; }
+.forgot-steps { margin: 12px 0; padding-left: 1.4em; }
+.forgot-steps li { margin-bottom: 12px; }
+.forgot-steps li::marker { font-weight: 700; color: var(--pink-700); }
+.nowrap { white-space: nowrap; }
+
+/* ---- 不具合報告:まだ見ていない返信の印 ---- */
+#hdr-settings { position: relative; }
+#hdr-settings.has-badge::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--pink-500);
+  border: 2px solid var(--pink-100);
+}
+.badge-new { background: var(--pink-500); color: #fff; }

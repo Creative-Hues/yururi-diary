@@ -6,6 +6,7 @@
 import { getLock, verifyPasscode, verifyBio, waitLeft, LOCK_NOTE, FAILS_PER_WAIT } from './lock.js';
 import { padHtml, bindPad } from './passcode-pad.js';
 import { APP_NAME } from './config.js';
+import { FORGOT_GUIDE_HTML } from './forgot-guide.js';
 import { esc } from './util.js';
 
 let showing = null; // 表示中なら、ロックが外れたときに解決する Promise
@@ -38,11 +39,29 @@ function show(lock, autoBio) {
     wrap.setAttribute('aria-modal', 'true');
     wrap.setAttribute('aria-label', 'ロック');
     wrap.innerHTML = `
-      <div class="lock-inner">
+      <div class="lock-inner lock-main">
         <div class="lock-brand"><img src="icons/icon.svg" alt="" width="56" height="56"><span>${esc(APP_NAME)}</span></div>
         ${padHtml({ title: 'パスコードを入力してください', bio: hasBio })}
         <p class="lock-note">${esc(LOCK_NOTE)}</p>
+        <button type="button" class="text-link lock-forgot" id="forgot-open">パスコードを忘れたら</button>
+      </div>
+      <div class="lock-inner lock-guide" hidden>
+        ${FORGOT_GUIDE_HTML}
+        <button type="button" class="btn btn-primary btn-block" id="forgot-close">パスコードの入力にもどる</button>
       </div>`;
+    // 「パスコードを忘れたら」の案内(ロック画面の中で切り替える)
+    const main = wrap.querySelector('.lock-main');
+    const guide = wrap.querySelector('.lock-guide');
+    wrap.querySelector('#forgot-open').addEventListener('click', () => {
+      main.hidden = true;
+      guide.hidden = false;
+      wrap.scrollTop = 0;
+    });
+    wrap.querySelector('#forgot-close').addEventListener('click', () => {
+      guide.hidden = true;
+      main.hidden = false;
+      wrap.scrollTop = 0;
+    });
     document.body.appendChild(wrap);
 
     let timer = null;

@@ -6,6 +6,7 @@ import { runSeeds } from './seed.js';
 import { startRouter, goBack } from './router.js';
 import { registerSW, applyUpdate, requestPersist } from './pwa.js';
 import { requireUnlock, watchAway } from './lock-screen.js';
+import { checkFeedbackReplies } from './feedback-setup.js';
 import { showFatal, showUpdateBar } from './ui.js';
 import { uuid, nowIso } from './util.js';
 
@@ -35,6 +36,7 @@ async function boot() {
   await requireUnlock();
   watchAway();
   startRouter();
+  checkFeedbackReplies().catch(() => {});
 }
 
 boot();

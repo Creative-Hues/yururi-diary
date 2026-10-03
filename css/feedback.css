@@ -1,0 +1,83 @@
+/* 不具合報告の部品(js/feedback)の見た目
+   アプリの色(--pink-* など)があればそれを使い、なければ下の色になる。ほかのアプリにもコピーして使える。 */
+
+.fb-notice, .fb-auto, .fb-offline {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--lemon, #fff7da);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+.fb-notice p, .fb-auto p { margin: 0; }
+.fb-notice p + p { margin-top: 4px; }
+.fb-auto { background: var(--pink-50, #fff0f4); color: var(--muted, #8d7b84); }
+.fb-auto .fb-label { color: var(--muted, #8d7b84); }
+
+.fb-form { display: grid; gap: 18px; }
+.fb-field { display: block; border: 0; margin: 0; padding: 0; }
+.fb-label { display: block; margin-bottom: 6px; font-size: 0.9rem; font-weight: 700; }
+.fb-label em { margin-left: 4px; padding: 0 6px; border-radius: 999px; background: var(--pink-100, #fde4ec); color: var(--pink-700, #b4587a); font-size: 0.7rem; font-style: normal; }
+.fb-label small { font-weight: 400; color: var(--muted, #8d7b84); }
+.fb-input {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--pink-200, #fbd3df);
+  border-radius: 12px;
+  background: #fff;
+  font: inherit;
+  font-size: 16px;
+}
+select.fb-input { appearance: auto; }
+.fb-hint { display: block; margin-top: 4px; font-size: 0.8rem; color: var(--muted, #8d7b84); }
+.fb-choice { display: flex; align-items: flex-start; gap: 10px; min-height: 40px; padding: 6px 0; line-height: 1.5; }
+.fb-choice input, .fb-consent input { flex: none; width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--pink-500, #e48aa5); }
+.fb-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fb-seg label { position: relative; }
+.fb-seg input { position: absolute; opacity: 0; inset: 0; }
+.fb-seg span {
+  display: grid;
+  place-items: center;
+  min-height: 48px;
+  border: 1px solid var(--pink-200, #fbd3df);
+  border-radius: 12px;
+  background: #fff;
+  font-weight: 700;
+}
+.fb-seg input:checked + span { background: var(--pink-300, #f6b8ca); border-color: var(--pink-500, #e48aa5); }
+.fb-seg input:focus-visible + span { outline: 2px solid var(--pink-500, #e48aa5); }
+.fb-consent { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border-radius: 12px; background: #fff; border: 1px solid var(--pink-200, #fbd3df); line-height: 1.6; font-size: 0.9rem; }
+.fb-consent em { display: block; font-style: normal; font-size: 0.8rem; color: var(--muted, #8d7b84); }
+.is-error .fb-label, .fb-consent.is-error { color: #b0485f; }
+.is-error .fb-input, .fb-consent.is-error { border-color: #d98a9c; background: #fff7f8; }
+.fb-submit {
+  min-height: 52px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--pink-300, #f6b8ca);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.fb-submit:disabled { opacity: 0.6; }
+
+/* 送った報告 */
+.fb-loading, .fb-empty, .fb-noreply { color: var(--muted, #8d7b84); font-size: 0.9rem; }
+.fb-new-link { display: block; margin-bottom: 16px; padding: 12px; border-radius: 999px; background: var(--pink-300, #f6b8ca); text-align: center; font-weight: 700; }
+.fb-report { margin-bottom: 12px; padding: 14px 16px; border-radius: 18px; background: #fff; border: 1px solid var(--line, #f3dde5); }
+.fb-report-head { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.fb-kind, .fb-status, .fb-new { padding: 1px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+.fb-kind { background: var(--pink-50, #fff0f4); color: var(--muted, #8d7b84); }
+.fb-status-received { background: var(--sky, #e4f1fb); }
+.fb-status-working { background: var(--lemon, #fff7da); }
+.fb-status-done { background: var(--mint, #e3f5ec); }
+.fb-new { background: var(--pink-500, #e48aa5); color: #fff; }
+.fb-report-title { margin: 8px 0 2px; font-size: 1rem; }
+.fb-report-date { margin: 0 0 8px; font-size: 0.8rem; color: var(--muted, #8d7b84); }
+.fb-replies { margin: 0; padding: 0; list-style: none; }
+.fb-replies li, .fb-append-done { margin: 6px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--pink-50, #fff0f4); line-height: 1.6; }
+.fb-append-done { background: var(--sky, #e4f1fb); }
+.fb-reply-from { display: block; font-size: 0.75rem; color: var(--muted, #8d7b84); }
+.fb-append { margin-top: 10px; display: grid; gap: 8px; }

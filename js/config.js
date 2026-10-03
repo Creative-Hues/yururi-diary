@@ -12,8 +12,12 @@ export const STORAGE_PREFIX = 'yururi-diary:';
 
 // 機能スイッチ
 export const FEATURES = {
-  feedback: false, // 不具合報告機能(退院まではオフ)
+  feedback: false, // 不具合報告機能(退院まではオフ)。true にするだけで使える
 };
+
+// 不具合報告の中継サーバー(feedback-relay)の URL。公開してよい URL で、秘密の値ではない。
+// トークンなどはここに書かない(中継サーバーの Cloudflare の Secret にだけ置く)。
+export const FEEDBACK_RELAY_URL = '';
 
 // 最後のバックアップからこの日数が過ぎたら、ホームでやさしく知らせる
 export const BACKUP_REMIND_DAYS = 7;

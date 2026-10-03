@@ -1,6 +1,7 @@
 // 設定画面
 
-import { APP_VERSION, FEATURES } from '../config.js';
+import { APP_VERSION } from '../config.js';
+import { feedbackEnabled, refreshFeedbackBadge } from '../feedback-setup.js';
 import { DB_VERSION, getMeta } from '../db.js';
 import { getLock } from '../lock.js';
 import { getSettings, setSetting, VITALS_PER_DAY_MIN, VITALS_PER_DAY_MAX } from '../prefs.js';
@@ -21,14 +22,14 @@ function isIOS() {
 }
 
 export async function renderSettings(el, params, isStale) {
-  const [settings, lastBackupAt, persisted, anonId, lock] = await Promise.all([
-    getSettings(), getMeta('lastBackupAt'), isPersisted(), getMeta('anonId'), getLock(),
+  const [settings, lastBackupAt, persisted, anonId, lock, unseen] = await Promise.all([
+    getSettings(), getMeta('lastBackupAt'), isPersisted(), getMeta('anonId'), getLock(), refreshFeedbackBadge(),
   ]);
   if (isStale()) return;
 
   const standalone = isStandalone();
   const lastText = lastBackupAt ? formatDateTimeJa(new Date(lastBackupAt)) : 'まだありません';
-  // [名前, 値, 説明]
+  // [名前, 値, 説明, 値を控えめに表示するか]
   const info = [
     ['アプリのバージョン', APP_VERSION, '不具合を伝えるときに使う番号です。'],
     ['記録のしくみの番号', String(DB_VERSION), '記録をしまう形の番号です。ふだんは気にしなくて大丈夫です。'],
@@ -37,7 +38,8 @@ export async function renderSettings(el, params, isStale) {
     ['記録の自動削除', persisted ? 'されない' : 'されることがある',
       persisted
         ? 'スマホの空き容量が少なくなっても、記録が自動で消されないようになっています。'
-        : 'スマホの空き容量がとても少なくなると、記録が自動で消されることがあります。バックアップを取っておくと安心です。'],
+        : 'スマホの空き容量がとても少なくなると、記録が自動で消されることがあります。バックアップを取っておくと安心です。',
+      !persisted],
   ];
 
   el.innerHTML = `
@@ -72,14 +74,14 @@ export async function renderSettings(el, params, isStale) {
       <h2 class="section-title">安心のために</h2>
       <div class="card rows">
         ${linkRow('lock', `<br><span class="small muted">${lock.enabled ? `オン${lock.credentialId ? '(指紋認証あり)' : ''}` : 'オフ'}</span>`)}
-        ${FEATURES.feedback ? linkRow('feedback') : ''}
+        ${feedbackEnabled() ? `${linkRow('feedback')}${linkRow('feedback-sent', unseen ? ` <span class="badge badge-new">新しい返信 ${unseen}</span>` : '')}` : ''}
       </div>
     </section>
 
     <section class="group">
       <h2 class="section-title">アプリについて</h2>
       <div class="card rows">
-        ${info.map(([k, v, note]) => `<div class="row info-row"><span>${esc(k)}<br><span class="small muted">${esc(note)}</span></span><span class="info-value">${esc(v)}</span></div>`).join('')}
+        ${info.map(([k, v, note, soft]) => `<div class="row info-row"><span>${esc(k)}<br><span class="small muted">${esc(note)}</span></span><span class="info-value${soft ? ' is-soft' : ''}">${esc(v)}</span></div>`).join('')}
         <div class="row info-copy"><button type="button" class="btn btn-block" id="copy-info">アプリの情報をコピー</button><span class="small muted">不具合を伝えるときに、貼りつけて使えます。</span></div>
       </div>
       ${standalone ? '' : installHelp()}

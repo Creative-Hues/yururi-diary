@@ -23,6 +23,7 @@ import { renderCalendar } from './screens/calendar.js';
 import { renderDay } from './screens/day.js';
 import { renderReport } from './screens/report.js';
 import { renderLockSettings } from './screens/lock.js';
+import { renderFeedback, renderFeedbackSent } from './screens/feedback.js';
 
 export const ROUTES = {
   '': { title: 'ホーム', render: renderHome },
@@ -77,5 +78,6 @@ export const ROUTES = {
   'edit-medicine': { title: '薬の登録', icon: '💊', render: renderEditMedicine },
   'edit-diary': { title: '日記のお題・書き出し', icon: '📔', render: renderEditDiary },
   lock: { title: 'ロック', icon: '🔒', render: renderLockSettings },
-  feedback: { title: '不具合報告・要望', icon: '✉️', phase: 6 },
+  feedback: { title: '不具合報告・要望を送る', icon: '✉️', render: renderFeedback },
+  'feedback-sent': { title: '送った報告', icon: '📮', render: renderFeedbackSent },
 };
