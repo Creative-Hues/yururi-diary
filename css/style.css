@@ -1130,3 +1130,32 @@ input[type="time"].input { min-width: 0; text-align: left; }
   .rp-calendar .cal-grid { border: 0.3mm solid #e8d6dd; }
   .rp-calendar .cal-legend { font-size: 8pt; }
 }
+
+/* =========================================================
+   v0.10.0:選んで削除・薬の情報・更新のお知らせ
+   ========================================================= */
+
+/* ---- 更新のお知らせ:文の下に「バックアップ」「更新する」を並べる ---- */
+.update-bar { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 12px 10px 16px; }
+.update-text { margin: 0; line-height: 1.5; font-weight: 600; }
+.update-text .small { font-weight: 400; color: var(--muted); }
+.update-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ---- 一覧の編集:選んで削除 ---- */
+.list-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.list-head .section-title { margin-bottom: 0; }
+.select-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.select-row { justify-content: flex-start; gap: 4px; padding-left: 14px; cursor: pointer; }
+.select-row .edit-main { padding-left: 8px; }
+.select-check { flex: none; width: 24px; height: 24px; margin: 0; accent-color: var(--danger); }
+.is-selecting .sort-list { border-color: var(--pink-300); }
+.btn-danger:disabled { opacity: 0.4; }
+
+/* ---- 服薬:薬の情報(タップで開く) ---- */
+.med-item { display: grid; gap: 0; }
+.med-info { margin: -6px 8px 0; padding: 10px 14px 8px; border: 1px solid var(--line); border-top: 0; border-radius: 0 0 var(--radius-sm) var(--radius-sm); background: var(--pink-50); font-size: 0.9rem; }
+.med-info summary { color: var(--pink-700); font-weight: 600; cursor: pointer; }
+.med-info-list { margin: 6px 0 0; }
+.med-info-list div { padding: 4px 0; border-top: 1px dashed var(--line); }
+.med-info-list dt { font-size: 0.8rem; font-weight: 700; color: var(--muted); }
+.med-info-list dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }

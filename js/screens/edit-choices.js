@@ -1,9 +1,11 @@
-// 体調の選択肢・薬の登録
+// 本人が追加・削除できる一覧(体調の選択肢・薬の登録・日記のお題と書き出し・相談メモのタグ・落ち着くことリスト)
+// どれも list-editor.js の「選んで削除」でまとめて消せる
 
 import { LISTS } from '../constants.js';
 import { renderListEditor } from './list-editor.js';
+import { href } from '../router.js';
 
-const HINT = '名前をタップすると変更・削除、右の「≡」をつかんで上下に動かすと並び替えができます。';
+const HINT = '名前をタップすると変更・削除、右の「≡」をつかんで上下に動かすと並び替えができます。「選んで削除」で、いくつかまとめて消すこともできます。';
 
 export function renderEditCondition(el, params, isStale) {
   return renderListEditor(el, [
@@ -14,7 +16,12 @@ export function renderEditCondition(el, params, isStale) {
 
 export function renderEditMedicine(el, params, isStale) {
   return renderListEditor(el, [
-    { list: LISTS.medicine, title: '', itemName: '薬', withLimit: true },
+    {
+      list: LISTS.medicine, title: '', itemName: '薬',
+      sub: (c) => [c.limitPerDay != null ? `1日${c.limitPerDay}回まで` : '上限なし', c.purpose].filter(Boolean).join('・'),
+      // 薬は情報の欄が多いので、ダイアログではなく入力画面(下書きつき)で追加・編集する
+      editHref: (c) => (c ? href('medicine-edit', c.id) : href('medicine-new')),
+    },
   ], isStale, HINT);
 }
 

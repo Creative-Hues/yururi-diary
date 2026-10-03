@@ -29,3 +29,11 @@ export async function reorderChoices(list, ids) {
     sorted.forEach((r, order) => os.put({ ...r, order }));
   });
 }
+
+// まとめて削除する(1つのトランザクションで行うので、途中で失敗したら1件も消えない)
+export function deleteChoices(ids) {
+  return withTx('choices', 'readwrite', (tx) => {
+    const os = tx.objectStore('choices');
+    ids.forEach((id) => os.delete(id));
+  });
+}

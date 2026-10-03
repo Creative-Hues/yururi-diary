@@ -34,8 +34,11 @@
     </header>
 
     <div class="update-bar" id="update-bar" hidden>
-      <span>新しいバージョンがあります</span>
-      <button type="button" class="btn btn-small btn-primary">更新する</button>
+      <p class="update-text">新しいバージョンがあります<br><span class="small">念のため、更新の前にバックアップを取っておくと安心です</span></p>
+      <div class="update-actions">
+        <a class="btn btn-small" id="update-backup" href="#/backup">バックアップ</a>
+        <button type="button" class="btn btn-small btn-primary" id="update-apply">更新する</button>
+      </div>
     </div>
 
     <main class="view" id="view">

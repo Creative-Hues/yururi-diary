@@ -3,7 +3,7 @@
 // 気分の5段階(色は付けない)。emoji は初期の絵文字(本人が設定で変えられる。prefs.js の moodEmoji)
 export const MOODS = [
   { level: 'great', label: 'とても良い', emoji: '🥰' },
-  { level: 'good', label: '良い', emoji: '☺️' },
+  { level: 'good', label: '良い', emoji: '😊' },
   { level: 'normal', label: 'ふつう', emoji: '🙂' },
   { level: 'tough', label: 'しんどい', emoji: '😕' },
   { level: 'very_tough', label: 'とてもしんどい', emoji: '☹️' },
@@ -41,6 +41,9 @@ export const LISTS = {
   calm: 'calm',
   consultTag: 'consult.tag',
 };
+
+// 薬の情報:飲むタイミング(いくつでも選べる。choices の薬に timings として名前の配列で持つ)
+export const MED_TIMINGS = ['朝', '昼', '夜', '寝る前', 'とんぷく'];
 
 // 体調の選択肢のうち、カレンダーの帯に出すもの(choices の kind)。名前を変えても kind で見分ける
 export const CHOICE_KINDS = { bowel: 'bowel', period: 'period' };

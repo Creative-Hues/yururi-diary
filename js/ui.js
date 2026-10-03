@@ -87,11 +87,13 @@ export async function confirmDialog({ title, message, ok = 'OK', cancel = 'や�
 }
 
 // 新しいバージョンのお知らせ
+// 「バックアップ」はバックアップの画面を開くだけ(お知らせは画面の外にあるので、取ったあとも残り、そのまま「更新する」を押せる)
 export function showUpdateBar(onApply) {
   const bar = $('#update-bar');
   bar.hidden = false;
-  bar.querySelector('button').onclick = () => {
-    bar.querySelector('button').disabled = true;
+  const apply = $('#update-apply');
+  apply.onclick = () => {
+    apply.disabled = true;
     onApply();
   };
 }
