@@ -996,3 +996,8 @@ input[type="time"].input { min-width: 0; text-align: left; }
 .seg-row-5 { grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .seg-row-5 .seg-btn { padding: 0 2px; font-size: 0.9rem; }
 .badge-on { background: var(--mint); color: #2f6b4f; }
+
+/* ---- 設定「アプリについて」 ---- */
+.info-row { align-items: flex-start; }
+.info-value { flex: none; max-width: 40%; text-align: right; font-weight: 700; color: var(--pink-700); }
+.info-copy { flex-direction: column; align-items: stretch; gap: 6px; }

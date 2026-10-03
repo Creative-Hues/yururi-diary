@@ -28,11 +28,16 @@ export async function renderSettings(el, params, isStale) {
 
   const standalone = isStandalone();
   const lastText = lastBackupAt ? formatDateTimeJa(new Date(lastBackupAt)) : 'まだありません';
+  // [名前, 値, 説明]
   const info = [
-    ['バージョン', APP_VERSION],
-    ['データ形式', `v${DB_VERSION}`],
-    ['起動のしかた', standalone ? 'ホーム画面から' : 'ブラウザで'],
-    ['データの保護', persisted ? 'オン' : 'オフ'],
+    ['アプリのバージョン', APP_VERSION, '不具合を伝えるときに使う番号です。'],
+    ['記録のしくみの番号', String(DB_VERSION), '記録をしまう形の番号です。ふだんは気にしなくて大丈夫です。'],
+    ['開き方', standalone ? 'ホーム画面から' : 'ブラウザから',
+      standalone ? 'アプリとして開いています。' : 'ホーム画面に追加して開くのがおすすめです。'],
+    ['記録の自動削除', persisted ? 'されない' : 'されることがある',
+      persisted
+        ? 'スマホの空き容量が少なくなっても、記録が自動で消されないようになっています。'
+        : 'スマホの空き容量がとても少なくなると、記録が自動で消されることがあります。バックアップを取っておくと安心です。'],
   ];
 
   el.innerHTML = `
@@ -74,8 +79,8 @@ export async function renderSettings(el, params, isStale) {
     <section class="group">
       <h2 class="section-title">アプリについて</h2>
       <div class="card rows">
-        ${info.map(([k, v]) => `<div class="row"><span>${esc(k)}</span><span class="muted">${esc(v)}</span></div>`).join('')}
-        <div class="row"><button type="button" class="btn btn-block" id="copy-info">アプリの情報をコピー</button></div>
+        ${info.map(([k, v, note]) => `<div class="row info-row"><span>${esc(k)}<br><span class="small muted">${esc(note)}</span></span><span class="info-value">${esc(v)}</span></div>`).join('')}
+        <div class="row info-copy"><button type="button" class="btn btn-block" id="copy-info">アプリの情報をコピー</button><span class="small muted">不具合を伝えるときに、貼りつけて使えます。</span></div>
       </div>
       ${standalone ? '' : installHelp()}
     </section>
@@ -97,8 +102,9 @@ export async function renderSettings(el, params, isStale) {
   // 不具合報告のときに貼り付けられる情報
   el.querySelector('#copy-info').addEventListener('click', async () => {
     const text = [
-      `ゆる〜り日記 ${APP_VERSION}(データ形式 v${DB_VERSION})`,
-      `起動:${standalone ? 'ホーム画面' : 'ブラウザ'}`,
+      `ゆる〜り日記 ${APP_VERSION}(記録のしくみ ${DB_VERSION})`,
+      `開き方:${standalone ? 'ホーム画面から' : 'ブラウザから'}`,
+      `記録の自動削除:${persisted ? 'されない' : 'されることがある'}`,
       `ID:${anonId ?? '-'}`,
       navigator.userAgent,
     ].join('\n');
