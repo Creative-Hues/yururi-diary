@@ -1,7 +1,8 @@
-// 一覧の編集(追加・名前の変更・削除・並び替え)
+// 一覧の編集(追加・名前の変更・削除・ドラッグでの並び替え)
 // 体調の選択肢・薬の登録で使う。フェーズ3のお題・落ち着くことリストでも使える。
 
-import { getChoices, addChoice, updateChoice, deleteChoice, moveChoice } from '../choices.js';
+import { getChoices, addChoice, updateChoice, deleteChoice, reorderChoices } from '../choices.js';
+import { makeSortable } from '../drag-sort.js';
 import { parseNum } from '../components.js';
 import { openDialog, confirmDialog, toast } from '../ui.js';
 import { esc } from '../util.js';
@@ -19,15 +20,14 @@ export async function renderListEditor(el, sections, isStale, note = '') {
     ${sections.map((s, i) => `
       <section class="group" data-list="${esc(s.list)}">
         ${s.title ? `<h2 class="section-title">${esc(s.title)}</h2>` : ''}
-        <div class="card rows">
-          ${lists[i].map((c, j) => `
+        <div class="card rows sort-list">
+          ${lists[i].map((c) => `
             <div class="row edit-row" data-id="${esc(c.id)}">
               <button type="button" class="edit-main" data-act="edit">
                 ${esc(c.label)}
                 ${s.withLimit ? `<span class="rec-sub">${c.limitPerDay != null ? `1日${c.limitPerDay}回まで` : '上限なし'}</span>` : ''}
               </button>
-              <button type="button" class="icon-btn" data-act="up" aria-label="上へ" ${j === 0 ? 'disabled' : ''}>↑</button>
-              <button type="button" class="icon-btn" data-act="down" aria-label="下へ" ${j === lists[i].length - 1 ? 'disabled' : ''}>↓</button>
+              <button type="button" class="drag-handle" aria-label="${esc(c.label)}を並び替え(つかんで上下に動かす)">≡</button>
             </div>`).join('') || '<div class="row muted">まだありません</div>'}
         </div>
         <button type="button" class="btn btn-block mt" data-act="add">＋ ${esc(s.itemName)}を追加</button>
@@ -43,10 +43,6 @@ export async function renderListEditor(el, sections, isStale, note = '') {
       const id = btn.closest('[data-id]')?.dataset.id;
       const item = items.find((c) => c.id === id);
       switch (btn.dataset.act) {
-        case 'up':
-        case 'down':
-          await moveChoice(s.list, id, btn.dataset.act === 'up' ? -1 : 1);
-          break;
         case 'add':
           if (!(await editItem(s, items, null))) return;
           break;
@@ -57,6 +53,15 @@ export async function renderListEditor(el, sections, isStale, note = '') {
           return;
       }
       rerender();
+    });
+
+    makeSortable(sec.querySelector('.sort-list'), {
+      itemSelector: '.edit-row',
+      handleSelector: '.drag-handle',
+      async onSort(ids) {
+        await reorderChoices(s.list, ids);
+        rerender();
+      },
     });
   });
 }

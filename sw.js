@@ -32,6 +32,7 @@ const ASSETS = [
   './js/components.js',
   './js/choices.js',
   './js/doses.js',
+  './js/drag-sort.js',
   './js/record-dialog.js',
   './js/support.js',
   './js/screens/mood.js',

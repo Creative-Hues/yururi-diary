@@ -5,10 +5,10 @@
 import { withTx, getMeta } from './db.js';
 import { uuid, nowIso } from './util.js';
 
-export const SEED_VERSION = 1;
+export const SEED_VERSION = 2;
 
 const INITIAL_CHOICES = {
-  'condition.body': ['元気', '頭痛', '眠い', 'だるい', '気持ち悪い', 'お腹', '食欲なし', '動悸'],
+  'condition.body': ['元気', '頭痛', '眠い', 'だるい', '気持ち悪い', 'お腹の調子が悪い', '食欲なし', '動悸'],
   'condition.mind': [
     '落ち着く', '不安', 'イライラ', '落ち込み', 'ぼーっと', '考えがまとまらない',
     'ざわざわ', '音が気になる', '光がまぶしい', 'においが気になる', '味が気になる', '肌ざわりが気になる',
@@ -43,6 +43,18 @@ const seeds = {
     INITIAL_SIGNALS.forEach((s, i) => {
       signals.put({ ...s, order: i, state: '', action: '', updatedAt: t });
     });
+  },
+
+  // v0.3.0:身体の「お腹」→「お腹の調子が悪い」(本人が名前を変えていない場合だけ)
+  // これまでの記録に残っている名前はそのまま(記録した時点の名前を残す方針)
+  2(tx) {
+    const req = tx.objectStore('choices').index('list').openCursor('condition.body');
+    req.onsuccess = () => {
+      const cur = req.result;
+      if (!cur) return;
+      if (cur.value.label === 'お腹') cur.update({ ...cur.value, label: 'お腹の調子が悪い' });
+      cur.continue();
+    };
   },
 };
 

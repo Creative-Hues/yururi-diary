@@ -18,15 +18,14 @@ export const updateChoice = (choice) => put('choices', choice);
 
 export const deleteChoice = (id) => del('choices', id);
 
-// 1つ上(dir=-1)・下(dir=1)へ動かし、順番を 0,1,2… と振り直す
-export async function moveChoice(list, id, dir) {
+// ids の順番に並べ替え、順番を 0,1,2… と振り直す
+export async function reorderChoices(list, ids) {
   const rows = await getChoices(list);
-  const i = rows.findIndex((r) => r.id === id);
-  const j = i + dir;
-  if (i < 0 || j < 0 || j >= rows.length) return;
-  [rows[i], rows[j]] = [rows[j], rows[i]];
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  // ids に無いもの(念のため)は後ろに残す
+  const sorted = [...ids.map((id) => byId.get(id)).filter(Boolean), ...rows.filter((r) => !ids.includes(r.id))];
   await withTx('choices', 'readwrite', (tx) => {
     const os = tx.objectStore('choices');
-    rows.forEach((r, order) => os.put({ ...r, order }));
+    sorted.forEach((r, order) => os.put({ ...r, order }));
   });
 }

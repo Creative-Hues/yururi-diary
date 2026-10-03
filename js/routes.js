@@ -7,9 +7,9 @@ import { renderSettings } from './screens/settings.js';
 import { renderBackup } from './screens/backup.js';
 import { renderMood } from './screens/mood.js';
 import { renderCondition } from './screens/condition.js';
-import { renderMeal } from './screens/meal.js';
+import { renderMeal, renderMealNew, renderMealEdit } from './screens/meal.js';
 import { renderMedicine } from './screens/medicine.js';
-import { renderVital } from './screens/vital.js';
+import { renderVital, renderVitalNew, renderVitalEdit } from './screens/vital.js';
 import { renderEditCondition, renderEditMedicine } from './screens/edit-choices.js';
 
 export const ROUTES = {
@@ -19,8 +19,12 @@ export const ROUTES = {
   mood: { title: '気分', icon: '😊', render: renderMood },
   condition: { title: '体調', icon: '🍀', render: renderCondition },
   meal: { title: '食事', icon: '🍙', render: renderMeal },
+  'meal-new': { title: '食事を記録', render: renderMealNew },
+  'meal-edit': { title: '食事を直す', render: renderMealEdit },
   medicine: { title: '服薬', icon: '💊', render: renderMedicine },
   vital: { title: 'バイタル', icon: '🌡️', render: renderVital },
+  'vital-new': { title: 'バイタルを記録', render: renderVitalNew },
+  'vital-edit': { title: 'バイタルを直す', render: renderVitalEdit },
 
   // フェーズ3:日記と気持ちの整理
   diary: {

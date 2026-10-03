@@ -62,9 +62,9 @@
 |---|---|---|
 | `mood` | 2 | `{ level }` … `"great"` / `"good"` / `"normal"` / `"tough"` / `"very_tough"` |
 | `condition` | 2 | `{ body: [{id, label}], mind: [{id, label}], bodyOther, mindOther }` |
-| `meal` | 2 | `{ slot, text }` … slot は `"breakfast"` / `"lunch"` / `"dinner"`(1日の各食事が1件。文を消して保存すると記録も消える) |
+| `meal` | 2 | `{ slot, text }` … slot は `"breakfast"` / `"lunch"` / `"dinner"`(食事1回が1件。同じ「昼」が2件あってもよい) |
 | `medicine` | 2 | `{ medicineId, name, note }`(1回飲むごとに1件) |
-| `vital` | 2 | `{ slot, temp, bpHigh, bpLow, pulse, spo2, weight }`(1回目〜N回目の各回が1件。空の項目は null) |
+| `vital` | 2 | `{ temp, bpHigh, bpLow, pulse, spo2, weight }`(測定1回が1件。空の項目は null。「1回目」「2回目」は保存せず、その日の時刻順で数える。v0.2.0 の記録に残る `slot` は使わない) |
 | `diary` | 3 | `{ text, prompt, favorite: 0\|1 }` |
 | `hitokoto` | 3 | `{ text, prompt, favorite: 0\|1 }` |
 | `worksheet` | 3 | `{ worry, level: 0〜10, ideas }` |
@@ -110,6 +110,7 @@ color は `blue` / `yellow` / `red` / `black` の4件固定。
 - `meta.seedVersion` を見て、まだ入れていない初期データだけを入れる。
 - 一度入れたら二度と入れない(本人が消した選択肢を勝手に戻さないため)。
 - 後のフェーズで初期データを足すときは `SEED_VERSION` を上げて `seeds` に追加する。
+- seed 2(v0.3.0):身体の「お腹」を「お腹の調子が悪い」に変更。名前が「お腹」のままのものだけ変える。これまでの記録に残っている名前は変えない。
 
 ## 構造を変えるとき(js/db.js)
 
