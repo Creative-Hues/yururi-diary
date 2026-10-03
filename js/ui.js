@@ -24,10 +24,11 @@ export function toast(message) {
 // ダイアログ。押したボタンの value(背景・戻る操作で閉じたら null)と、中身の要素を返す。
 // body は HTML。validate(value, el) がエラー文を返したら、トーストを出して閉じない。
 // Android の「戻る」でページではなくダイアログが閉じるよう、開くときに履歴を1つ積む。
-export function openDialog({ title, body = '', buttons, onMount, validate }) {
+// sheet: true で画面の下から出る形(押しつけ感を減らしたいお知らせ用)
+export function openDialog({ title, body = '', buttons, onMount, validate, sheet = false }) {
   return new Promise((resolve) => {
     const wrap = document.createElement('div');
-    wrap.className = 'modal-backdrop';
+    wrap.className = `modal-backdrop${sheet ? ' sheet' : ''}`;
     wrap.innerHTML = `
       <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <h2 id="modal-title" class="modal-title">${esc(title)}</h2>
@@ -60,9 +61,10 @@ export function openDialog({ title, body = '', buttons, onMount, validate }) {
     window.addEventListener('popstate', onPop);
     wrap.addEventListener('click', async (e) => {
       if (e.target === wrap) return close(null);
-      const btn = e.target.closest('button[data-i]');
+      // 下のボタンのほか、body の中の data-value を持つ要素も押せる
+      const btn = e.target.closest('button[data-i], [data-value]');
       if (!btn) return;
-      const { value = null } = buttons[Number(btn.dataset.i)];
+      const value = btn.dataset.value ?? buttons[Number(btn.dataset.i)].value ?? null;
       if (value && validate) {
         const err = await validate(value, dlg);
         if (err) return toast(err);

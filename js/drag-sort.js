@@ -67,8 +67,15 @@ export function makeSortable(container, { itemSelector, handleSelector, onSort }
       });
     };
 
+    // つかんだだけでは自動スクロールしない(画面の端の行をつかんだとき、急に動かないように)
+    let moved = false;
     const autoScroll = () => {
+      if (!moved && Math.abs(lastY - startY) > 12) moved = true;
       let v = 0;
+      if (!moved) {
+        raf = requestAnimationFrame(autoScroll);
+        return;
+      }
       if (lastY < EDGE) v = -MAX_SCROLL_SPEED * (1 - lastY / EDGE);
       else if (lastY > window.innerHeight - EDGE) v = MAX_SCROLL_SPEED * (1 - (window.innerHeight - lastY) / EDGE);
       if (v) {

@@ -62,7 +62,9 @@ export function guardLeave(isDirty) {
 
   return {
     release,
-    // 入力画面と guard の2つ分戻る。戻った先が okHash でなければ、okHash に置き換える
+    // 入力画面と guard の2つ分戻る。
+    // 戻った先が okHash と同じ画面の別の日(日時を直したとき)か、ホーム(入力画面を直接開いていたとき)なら、
+    // okHash に置き換える。お気に入り一覧など別の画面から来ていたら、そこに戻る。
     leave(okHash) {
       release();
       return new Promise((resolve) => {
@@ -70,7 +72,9 @@ export function guardLeave(isDirty) {
         const done = () => {
           if (settled) return;
           settled = true;
-          if (location.hash !== okHash) location.replace(okHash);
+          const landed = parseHash().name;
+          const target = okHash.replace(/^#\/?/, '').split('/')[0];
+          if (location.hash !== okHash && (landed === target || landed === '')) location.replace(okHash);
           resolve();
         };
         window.addEventListener('popstate', done, { once: true });

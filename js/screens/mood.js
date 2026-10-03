@@ -34,9 +34,10 @@ export async function renderMood(el, params, isStale) {
       el.querySelectorAll('.mood-btn').forEach((x) => { x.disabled = true; }); // 二重タップ防止
       const { level } = b.dataset;
       await saveRecord(newRecord('mood', { level }));
-      toast(`「${moodLabel(level)}」を記録しました`);
       await rerender();
+      // しんどいときは下から出るお知らせの見出しで「記録しました」を伝える(トーストがボタンに重ならないように)
       if (TOUGH_MOODS.includes(level)) onToughMood(level);
+      else toast(`「${moodLabel(level)}」を記録しました`);
     });
   });
 

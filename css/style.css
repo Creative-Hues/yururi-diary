@@ -643,3 +643,153 @@ input[type="time"].input { min-width: 0; text-align: left; }
 .mt-field { margin-top: 16px; }
 .sort-list .edit-row:first-child { border-top-left-radius: var(--radius); border-top-right-radius: var(--radius); }
 .sort-list .edit-row:last-child { border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius); }
+
+/* =========================================================
+   フェーズ3:日記・信号機・気持ちの整理
+   ========================================================= */
+
+/* ---- 日記 ---- */
+.prompt-box { display: grid; gap: 8px; justify-items: start; margin-bottom: 4px; }
+.prompt-current {
+  position: relative;
+  width: 100%;
+  padding: 10px 48px 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--lavender);
+}
+.prompt-head { font-size: 0.75rem; font-weight: 700; color: var(--muted); }
+.prompt-text { margin: 0; font-weight: 700; }
+.prompt-clear { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); width: 36px; height: 36px; border: 0; background: transparent; }
+.prompt-label { margin: 0 0 4px; font-size: 0.85rem; color: var(--muted); }
+.fav-toggle {
+  min-height: 44px;
+  padding: 6px 16px;
+  border: 1px solid var(--pink-200);
+  border-radius: 999px;
+  background: var(--surface);
+  font-weight: 600;
+  cursor: pointer;
+}
+.fav-toggle[aria-pressed="true"] { background: var(--lemon); border-color: #f0dc8f; }
+.fav-mark { color: #d9a400; }
+.kind-badge { padding: 1px 10px; border-radius: 999px; background: var(--pink-100); color: var(--pink-700); font-size: 0.75rem; font-weight: 700; }
+.view-text.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; }
+.seg-row-top { margin-bottom: 16px; }
+
+/* ---- 信号機(色はこの機能の中だけで使う) ---- */
+.sig-blue { --sig: #7fb6e6; --sig-ink: #1f3b55; }
+.sig-yellow { --sig: #f2d36b; --sig-ink: #4a3a00; }
+.sig-red { --sig: #ea8a8a; --sig-ink: #4d1515; }
+.sig-black { --sig: #4a4347; --sig-ink: #ffffff; }
+.signal-colors { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sig-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  min-height: 84px;
+  padding: 10px 14px;
+  border: 3px solid transparent;
+  border-radius: var(--radius);
+  background: var(--sig);
+  color: var(--sig-ink);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.sig-btn[aria-pressed="true"] { border-color: var(--text); box-shadow: 0 0 0 3px #fff inset; }
+.sig-name { font-size: 1.4rem; font-weight: 800; line-height: 1.2; }
+.sig-label { font-size: 0.85rem; line-height: 1.35; }
+.sig-hint { text-align: center; margin-top: 20px; }
+.signal-detail {
+  margin-top: 16px;
+  padding: 18px 18px 22px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 10px solid var(--sig, var(--pink-300));
+  box-shadow: var(--shadow);
+}
+.sig-border-blue { --sig: #7fb6e6; }
+.sig-border-yellow { --sig: #f2d36b; }
+.sig-border-red { --sig: #ea8a8a; }
+.sig-border-black { --sig: #4a4347; }
+.card.sig-border-blue, .card.sig-border-yellow, .card.sig-border-red, .card.sig-border-black { border-left: 10px solid var(--sig); }
+.sig-title { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; font-size: 1.3rem; line-height: 1.4; }
+.sig-dot { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--sig); }
+.sig-head { margin: 18px 0 6px; font-size: 1rem; color: var(--muted); }
+.sig-text { font-size: 1.3rem; line-height: 1.8; overflow-wrap: anywhere; }
+.sig-text p { margin: 0 0 4px; }
+.sig-text ul { margin: 0; padding-left: 1.3em; }
+.sig-text li { margin-bottom: 4px; }
+.sig-empty { color: var(--muted); font-size: 1rem; }
+.field-label-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.field-label-row .field-label { margin: 0; }
+
+/* ---- 相談したいことメモ ---- */
+.consult-card { display: flex; align-items: stretch; gap: 0; margin-bottom: 10px; padding: 0; }
+.consult-main { flex: 1; min-width: 0; padding: 14px 16px; }
+.consult-main:active { background: var(--pink-50); border-radius: var(--radius) 0 0 var(--radius); }
+.consult-main .view-text { margin-bottom: 4px; }
+.check-btn {
+  flex: none;
+  width: 92px;
+  border: 0;
+  border-left: 1px solid var(--line);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--mint);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.consult-card.is-done { opacity: 0.75; }
+.consult-card.is-done .check-btn { background: var(--surface); font-weight: 400; }
+.done-list summary { cursor: pointer; padding: 8px 0; }
+.check-row { display: flex; align-items: center; gap: 10px; min-height: 48px; margin-top: 12px; font-weight: 600; }
+.check-row input { width: 24px; height: 24px; accent-color: var(--pink-500); }
+
+/* ---- 整理シート ---- */
+.level-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.level-btn {
+  min-height: 48px;
+  border: 1px solid var(--pink-200);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.level-btn[aria-pressed="true"] { background: var(--pink-300); border-color: var(--pink-500); }
+.level-scale { display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.8rem; color: var(--muted); }
+.ws-row { margin-top: 8px; }
+.ws-label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--muted); }
+.ws-level { display: flex; align-items: center; gap: 4px; }
+.ws-level strong { font-size: 1.3rem; }
+.ws-level small { color: var(--muted); margin-right: 8px; }
+.level-dots { display: inline-flex; gap: 3px; }
+.level-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--pink-100); }
+.level-dots i.on { background: var(--pink-500); }
+
+/* ---- 「しんどい」のときの下からのお知らせ ---- */
+.modal-backdrop.sheet { place-items: end center; padding: 0; background: rgba(77, 63, 70, 0.2); }
+.modal-backdrop.sheet .modal {
+  max-width: 560px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding-bottom: calc(20px + var(--safe-bottom));
+}
+.calm-list { margin: 4px 0 0; padding-left: 1.3em; font-size: 1.05rem; line-height: 1.8; }
+.text-link {
+  display: inline;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--pink-700);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}

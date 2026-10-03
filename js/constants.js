@@ -34,4 +34,13 @@ export const LISTS = {
   body: 'condition.body',
   mind: 'condition.mind',
   medicine: 'medicine',
+  diaryStarter: 'diary.starter',
+  diaryPrompt: 'diary.prompt',
+  hitokotoStarter: 'hitokoto.starter',
+  hitokotoPrompt: 'hitokoto.prompt',
+  calm: 'calm',
 };
+
+// 整理シートのつらさ
+export const LEVEL_MIN = 0;
+export const LEVEL_MAX = 10;
