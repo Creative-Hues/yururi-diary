@@ -139,3 +139,6 @@ export function watchDirty(root, onDirty) {
     i.addEventListener('change', onDirty);
   });
 }
+
+// 数値を表示用に(計算などで出る 36.800000000000004 のような端数を丸める。最大小数2桁)
+export const fmtNum = (v) => (v == null || v === '' ? '' : String(Math.round(Number(v) * 100) / 100));

@@ -70,9 +70,9 @@ function worksheetForm(el, rec) {
       <div class="field">
         <span class="field-label">② つらさ(タップで選ぶ・もう一度タップで取り消し)</span>
         <div class="level-grid" role="group" aria-label="つらさ">
-          ${LEVELS.map((n) => `<button type="button" class="level-btn" data-level="${n}" aria-pressed="${n === level}">${n}</button>`).join('')}
+          ${LEVELS.map((n) => `<button type="button" class="level-btn${n === LEVEL_MIN ? ' level-zero' : ''}" data-level="${n}" aria-pressed="${n === level}">${n === LEVEL_MIN ? `${n} つらくない` : n}</button>`).join('')}
         </div>
-        <div class="level-scale"><span>0 つらくない</span><span>10 とてもつらい</span></div>
+        <div class="level-scale"><span>10 とてもつらい</span></div>
       </div>
       <label class="field">
         <span class="field-label">③ できそうなこと</span>

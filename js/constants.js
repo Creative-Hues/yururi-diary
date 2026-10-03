@@ -44,3 +44,18 @@ export const LISTS = {
 // 整理シートのつらさ
 export const LEVEL_MIN = 0;
 export const LEVEL_MAX = 10;
+
+// カレンダーの印・日付ごとの一覧に出す種類(この順に並ぶ)
+// mark:カレンダーのマスに出す1文字(気分は記号で出すので無し)
+export const RECORD_KINDS = [
+  { type: 'mood', label: '気分' },
+  { type: 'condition', label: '体調', mark: '体' },
+  { type: 'meal', label: '食事', mark: '食' },
+  { type: 'medicine', label: '服薬', mark: '薬' },
+  { type: 'vital', label: 'バイタル', mark: 'バ' },
+  { type: 'diary', label: '一日の日記', mark: '日' },
+  { type: 'hitokoto', label: 'ひとこと日記', mark: 'ひ' },
+  { type: 'worksheet', label: '整理シート', mark: '整' },
+  { type: 'consult', label: '相談したいことメモ', mark: '相' },
+];
+export const moodShort = (level) => MOODS.find((m) => m.level === level)?.short ?? '';

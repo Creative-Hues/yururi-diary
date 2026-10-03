@@ -43,23 +43,26 @@ export async function renderMood(el, params, isStale) {
 
   el.querySelectorAll('.rec-item').forEach((b) => {
     b.addEventListener('click', async () => {
-      const rec = rows.find((r) => r.id === b.dataset.id);
-      let level = rec.data.level;
-      const changed = await editRecordDialog({
-        title: '気分を直す',
-        rec,
-        body: `<div class="seg-list">${MOODS.map((m) => `<button type="button" class="seg-btn" data-level="${m.level}" aria-pressed="${m.level === level}">${esc(m.label)}</button>`).join('')}</div>`,
-        onMount(d) {
-          d.querySelectorAll('.seg-btn').forEach((s) => {
-            s.addEventListener('click', () => {
-              level = s.dataset.level;
-              d.querySelectorAll('.seg-btn').forEach((x) => x.setAttribute('aria-pressed', String(x === s)));
-            });
-          });
-        },
-        apply() { rec.data.level = level; },
-      });
-      if (changed) rerender();
+      if (await editMood(rows.find((r) => r.id === b.dataset.id))) rerender();
     });
+  });
+}
+
+// 気分を直す・削除するダイアログ(カレンダーの日付ごとの一覧からも使う)。変えたら true
+export function editMood(rec) {
+  let level = rec.data.level;
+  return editRecordDialog({
+    title: '気分を直す',
+    rec,
+    body: `<div class="seg-list">${MOODS.map((m) => `<button type="button" class="seg-btn" data-level="${m.level}" aria-pressed="${m.level === level}">${esc(m.label)}</button>`).join('')}</div>`,
+    onMount(d) {
+      d.querySelectorAll('.seg-btn').forEach((s) => {
+        s.addEventListener('click', () => {
+          level = s.dataset.level;
+          d.querySelectorAll('.seg-btn').forEach((x) => x.setAttribute('aria-pressed', String(x === s)));
+        });
+      });
+    },
+    apply() { rec.data.level = level; },
   });
 }

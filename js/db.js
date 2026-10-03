@@ -150,3 +150,7 @@ export const getRecordsByDate = (date) => getAll('records', 'date', date);
 
 export const getRecordsByType = (type, fromDate, toDate) =>
   getAll('records', 'type_date', IDBKeyRange.bound([type, fromDate], [type, toDate]));
+
+// fromDate〜toDate(両端を含む)のすべての種類の記録
+export const getRecordsInRange = (fromDate, toDate) =>
+  getAll('records', 'date', IDBKeyRange.bound(fromDate, toDate));

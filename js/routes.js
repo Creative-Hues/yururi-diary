@@ -19,6 +19,9 @@ import {
 import { renderSignal, renderSignalEdit } from './screens/signal.js';
 import { renderConsult, renderConsultNew, renderConsultEdit } from './screens/consult.js';
 import { renderWorksheet, renderWorksheetNew, renderWorksheetEdit } from './screens/worksheet.js';
+import { renderCalendar } from './screens/calendar.js';
+import { renderDay } from './screens/day.js';
+import { renderReport } from './screens/report.js';
 
 export const ROUTES = {
   '': { title: 'ホーム', render: renderHome },
@@ -62,8 +65,9 @@ export const ROUTES = {
   'worksheet-edit': { title: '整理シートを直す', render: renderWorksheetEdit },
 
   // フェーズ4:見返し
-  calendar: { title: 'カレンダー', icon: '📅', phase: 4 },
-  report: { title: '相談用の表示', icon: '📋', phase: 4 },
+  calendar: { title: 'カレンダー', icon: '📅', render: renderCalendar },
+  day: { title: 'この日の記録', render: renderDay },
+  report: { title: '相談用の表示', icon: '📋', render: renderReport },
 
   // 設定まわり
   settings: { title: '設定', render: renderSettings },

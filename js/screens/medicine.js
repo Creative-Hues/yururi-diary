@@ -78,16 +78,19 @@ export async function renderMedicine(el, params, isStale) {
 
   el.querySelectorAll('.rec-item').forEach((b) => {
     b.addEventListener('click', async () => {
-      const rec = todays.find((r) => r.id === b.dataset.id);
-      const changed = await editRecordDialog({
-        title: rec.data.name,
-        rec,
-        atLabel: '飲んだ時刻',
-        body: noteField(rec.data.note),
-        apply(d) { rec.data.note = d.querySelector('[name="note"]').value.trim(); },
-      });
-      if (changed) rerender();
+      if (await editDose(todays.find((r) => r.id === b.dataset.id))) rerender();
     });
+  });
+}
+
+// 服薬の記録を直す・削除するダイアログ(カレンダーの日付ごとの一覧からも使う)。変えたら true
+export function editDose(rec) {
+  return editRecordDialog({
+    title: rec.data.name,
+    rec,
+    atLabel: '飲んだ時刻',
+    body: noteField(rec.data.note),
+    apply(d) { rec.data.note = d.querySelector('[name="note"]').value.trim(); },
   });
 }
 

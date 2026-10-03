@@ -7,7 +7,7 @@
 import { get, getRecordsByType, newRecord, saveRecord } from '../db.js';
 import { getSettings } from '../prefs.js';
 import { VITAL_FIELDS } from '../constants.js';
-import { dayNavHtml, bindDayNav, isDateKey, timeOf, parseNum, datetimeField, readAt, sortByAt } from '../components.js';
+import { dayNavHtml, bindDayNav, isDateKey, timeOf, parseNum, datetimeField, readAt, sortByAt, fmtNum } from '../components.js';
 import { deleteRecordWithConfirm } from '../record-dialog.js';
 import { href, guardLeave } from '../router.js';
 import { toast } from '../ui.js';
@@ -16,16 +16,16 @@ import { dateKey, esc, localDateTime } from '../util.js';
 const OTHER_DAY_TIME = '12:00';
 
 // 見る画面のカードの中身(入力のある項目だけ。血圧は上下をまとめる)
-function vitalItems(data) {
+export function vitalItems(data) {
   const items = [];
   const add = (label, value, unit) => items.push(`<div class="vv-item"><dt>${label}</dt><dd>${value}<small>${unit}</small></dd></div>`);
   for (const f of VITAL_FIELDS) {
     if (f.key === 'bpLow') continue;
     if (f.key === 'bpHigh') {
-      if (data.bpHigh != null || data.bpLow != null) add('血圧', `${data.bpHigh ?? '–'} / ${data.bpLow ?? '–'}`, 'mmHg');
+      if (data.bpHigh != null || data.bpLow != null) add('血圧', `${fmtNum(data.bpHigh) || '–'} / ${fmtNum(data.bpLow) || '–'}`, 'mmHg');
       continue;
     }
-    if (data[f.key] != null) add(f.label, esc(data[f.key]), f.unit);
+    if (data[f.key] != null) add(f.label, esc(fmtNum(data[f.key])), f.unit);
   }
   return items.join('');
 }
@@ -84,7 +84,7 @@ function vitalForm(el, { rec = null, date }) {
           <label class="field vital-field">
             <span class="field-label">${f.label}</span>
             <span class="with-unit">
-              <input type="text" class="input" name="${f.key}" inputmode="${f.decimal ? 'decimal' : 'numeric'}" autocomplete="off" value="${esc(rec?.data[f.key] ?? '')}">
+              <input type="text" class="input" name="${f.key}" inputmode="${f.decimal ? 'decimal' : 'numeric'}" autocomplete="off" value="${esc(fmtNum(rec?.data[f.key]))}">
               <span class="unit">${f.unit}</span>
             </span>
           </label>`).join('')}
