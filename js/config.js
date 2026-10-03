@@ -1,0 +1,22 @@
+// アプリ全体の設定値
+
+export const APP_ID = 'yururi-diary';
+export const APP_NAME = 'ゆる〜り日記🥰';
+export const APP_SHORT_NAME = 'ゆる〜り日記';
+export const APP_VERSION = self.APP_VERSION;
+
+// IndexedDB・Cache Storage・localStorage は「creative-hues.github.io」全体で共有される
+// (同じアカウントの他アプリ、例:ひとつやね と同じ置き場)。名前は必ずアプリ固有にする。
+export const DB_NAME = 'yururi-diary';
+export const STORAGE_PREFIX = 'yururi-diary:';
+
+// 機能スイッチ
+export const FEATURES = {
+  feedback: false, // 不具合報告機能(退院まではオフ)
+};
+
+// 最後のバックアップからこの日数が過ぎたら、ホームでやさしく知らせる
+export const BACKUP_REMIND_DAYS = 7;
+
+// バックアップファイルの形式バージョン(ファイルの構造を変えたら上げる)
+export const BACKUP_FORMAT = 1;

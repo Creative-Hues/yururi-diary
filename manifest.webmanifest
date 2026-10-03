@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "ゆる〜り日記🥰",
+  "short_name": "ゆる〜り日記",
+  "description": "体調・気分・服薬などをやさしく記録する日記アプリ",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff7f9",
+  "theme_color": "#fde4ec",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
