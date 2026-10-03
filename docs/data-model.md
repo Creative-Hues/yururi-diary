@@ -21,6 +21,7 @@
 | key | value |
 |---|---|
 | `anonId` | 匿名ID(初回起動時に作成。不具合報告で使う) |
+| `feedback` | 不具合報告:送った報告の控え・見た返信の数・最後に読み込んだ日時(js/feedback) |
 | `installedAt` | 初回起動日時(ISO) |
 | `seedVersion` | 初期データをどこまで入れたか |
 | `lastBackupAt` | 最後にバックアップした日時(ISO) |
