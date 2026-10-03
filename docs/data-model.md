@@ -56,15 +56,15 @@
 - **種類を増やしてもDBの作り直しが不要**:新しい `type` を使い始めるだけでよい。
 - `at` はタイムゾーンを持たない端末の時刻。`<input type="datetime-local">` の値をそのまま入れられる。
 
-### type ごとの data(予定)
+### type ごとの data(フェーズ2の5種類は実装済み)
 
 | type | フェーズ | data |
 |---|---|---|
 | `mood` | 2 | `{ level }` … `"great"` / `"good"` / `"normal"` / `"tough"` / `"very_tough"` |
 | `condition` | 2 | `{ body: [{id, label}], mind: [{id, label}], bodyOther, mindOther }` |
-| `meal` | 2 | `{ slot: "breakfast" \| "lunch" \| "dinner", text }` |
+| `meal` | 2 | `{ slot, text }` … slot は `"breakfast"` / `"lunch"` / `"dinner"`(1日の各食事が1件。文を消して保存すると記録も消える) |
 | `medicine` | 2 | `{ medicineId, name, note }`(1回飲むごとに1件) |
-| `vital` | 2 | `{ slot, temp, bpHigh, bpLow, pulse, spo2, weight }`(各項目は空でもよい) |
+| `vital` | 2 | `{ slot, temp, bpHigh, bpLow, pulse, spo2, weight }`(1回目〜N回目の各回が1件。空の項目は null) |
 | `diary` | 3 | `{ text, prompt, favorite: 0\|1 }` |
 | `hitokoto` | 3 | `{ text, prompt, favorite: 0\|1 }` |
 | `worksheet` | 3 | `{ worry, level: 0〜10, ideas }` |

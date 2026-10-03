@@ -21,32 +21,67 @@ export function toast(message) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
 }
 
-// 確認ダイアログ。OK なら true を返す。
-export function confirmDialog({ title, message, ok = 'OK', cancel = 'やめる', danger = false }) {
+// ダイアログ。押したボタンの value(背景・戻る操作で閉じたら null)と、中身の要素を返す。
+// body は HTML。validate(value, el) がエラー文を返したら、トーストを出して閉じない。
+// Android の「戻る」でページではなくダイアログが閉じるよう、開くときに履歴を1つ積む。
+export function openDialog({ title, body = '', buttons, onMount, validate }) {
   return new Promise((resolve) => {
     const wrap = document.createElement('div');
     wrap.className = 'modal-backdrop';
     wrap.innerHTML = `
       <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <h2 id="modal-title" class="modal-title">${esc(title)}</h2>
-        <div class="modal-body">${esc(message).replace(/\n/g, '<br>')}</div>
-        <div class="modal-actions">
-          <button type="button" class="btn" data-v="0">${esc(cancel)}</button>
-          <button type="button" class="btn ${danger ? 'btn-danger' : 'btn-primary'}" data-v="1">${esc(ok)}</button>
-        </div>
+        <div class="modal-body">${body}</div>
+        <div class="modal-actions">${buttons.map((b, i) => `<button type="button" class="btn ${b.cls ?? ''}" data-i="${i}">${esc(b.label)}</button>`).join('')}</div>
       </div>`;
-    const close = (v) => {
+    const dlg = wrap.querySelector('.modal');
+    let closed = false;
+
+    const onPop = () => close(null, true);
+    const close = (value, byBack = false) => {
+      if (closed) return;
+      closed = true;
       wrap.remove();
-      resolve(v);
+      window.removeEventListener('popstate', onPop);
+      if (byBack) return resolve({ value, el: dlg });
+      // 積んだ履歴を戻してから知らせる(続けて画面移動しても順番が崩れないように)
+      let settled = false;
+      const done = () => {
+        if (settled) return;
+        settled = true;
+        resolve({ value, el: dlg });
+      };
+      window.addEventListener('popstate', done, { once: true });
+      setTimeout(done, 600);
+      history.back();
     };
-    wrap.addEventListener('click', (e) => {
-      if (e.target === wrap) return close(false);
-      const v = e.target.closest('button')?.dataset.v;
-      if (v != null) close(v === '1');
+
+    history.pushState({ modal: true }, '');
+    window.addEventListener('popstate', onPop);
+    wrap.addEventListener('click', async (e) => {
+      if (e.target === wrap) return close(null);
+      const btn = e.target.closest('button[data-i]');
+      if (!btn) return;
+      const { value = null } = buttons[Number(btn.dataset.i)];
+      if (value && validate) {
+        const err = await validate(value, dlg);
+        if (err) return toast(err);
+      }
+      close(value);
     });
     document.body.appendChild(wrap);
-    wrap.querySelector('[data-v="1"]').focus();
+    onMount?.(dlg);
   });
+}
+
+// 確認ダイアログ。OK なら true を返す。
+export async function confirmDialog({ title, message, ok = 'OK', cancel = 'やめる', danger = false }) {
+  const { value } = await openDialog({
+    title,
+    body: esc(message).replace(/\n/g, '<br>'),
+    buttons: [{ label: cancel }, { label: ok, value: 'ok', cls: danger ? 'btn-danger' : 'btn-primary' }],
+  });
+  return value === 'ok';
 }
 
 // 新しいバージョンのお知らせ

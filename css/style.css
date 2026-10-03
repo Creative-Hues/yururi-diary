@@ -375,3 +375,224 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ---- 開けなかったとき ---- */
 .fatal { text-align: center; }
 .fatal-title { font-weight: 700; font-size: 1.1rem; }
+
+/* =========================================================
+   フェーズ2:記録の画面
+   ========================================================= */
+
+.lead { margin: 0 4px 12px; font-weight: 700; font-size: 1.05rem; }
+.empty { margin: 0 4px; color: var(--muted); font-size: 0.9rem; }
+.hint-top { margin: 0 4px 12px; }
+.mt-group { margin-top: 24px; }
+.link-row {
+  display: block;
+  margin-top: 24px;
+  padding: 12px 4px;
+  color: var(--pink-700);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+/* ---- 入力欄 ---- */
+.field { display: block; margin-top: 12px; }
+.field:first-child { margin-top: 0; }
+.field-label { display: block; margin-bottom: 4px; font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+.input {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--pink-200);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  font-size: 16px; /* iPhone のズーム防止 */
+  line-height: 1.5;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.input:focus { outline: 2px solid var(--pink-300); outline-offset: 0; border-color: var(--pink-300); }
+textarea.input { resize: vertical; }
+input[type="datetime-local"].input,
+input[type="date"].input,
+input[type="time"].input { min-width: 0; text-align: left; }
+.with-unit { display: flex; align-items: center; gap: 6px; }
+.with-unit .input { flex: 1; min-width: 0; }
+.unit { flex: none; font-size: 0.85rem; color: var(--muted); }
+
+.form-actions { display: grid; gap: 10px; margin-top: 16px; }
+.btn-ghost-danger { border-color: var(--line); color: var(--danger); background: var(--surface); }
+
+.save-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin: 8px -4px 0;
+  padding: 12px 4px calc(12px + var(--safe-bottom));
+  background: linear-gradient(to bottom, rgba(255, 247, 249, 0), var(--bg) 35%);
+}
+
+/* ---- 気分 ---- */
+.mood-list { display: grid; gap: 10px; }
+.mood-btn {
+  min-height: 56px;
+  padding: 10px 16px;
+  border: 1px solid var(--pink-200);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.mood-btn:active { background: var(--pink-50); }
+
+/* 選ぶボタン(縦に並ぶ、1つだけ選ぶ) */
+.seg-list { display: grid; gap: 8px; margin-bottom: 16px; }
+.seg-btn {
+  min-height: 44px;
+  border: 1px solid var(--pink-200);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-weight: 600;
+  cursor: pointer;
+}
+.seg-btn[aria-pressed="true"] { border: 2px solid var(--pink-500); background: var(--pink-100); }
+
+/* ---- 体調のチップ(複数選ぶ) ---- */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.chip {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--pink-200);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.95rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.chip[aria-pressed="true"] { background: var(--pink-300); border-color: var(--pink-300); font-weight: 700; }
+.chip[aria-pressed="true"]::before { content: "✓ "; }
+
+/* ---- 記録の一覧 ---- */
+.rec-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 16px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: transparent;
+  text-align: left;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.rec-item:first-child { border-top: 0; }
+.rec-item:active { background: var(--pink-50); }
+.rec-time { flex: none; min-width: 3em; font-weight: 700; color: var(--pink-700); font-variant-numeric: tabular-nums; }
+.rec-main { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.rec-sub { display: block; font-size: 0.85rem; color: var(--muted); white-space: pre-wrap; }
+
+/* ---- 日付の切り替え ---- */
+.day-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+.day-btn {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--pink-200);
+  border-radius: 50%;
+  background: var(--surface);
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--pink-700);
+  cursor: pointer;
+}
+.day-label { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 0; }
+.day-input {
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid var(--pink-200);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 16px;
+  font-weight: 700;
+  min-width: 0;
+}
+.today-badge { flex: none; padding: 2px 10px; border-radius: 999px; background: var(--pink-100); color: var(--pink-700); font-size: 0.8rem; font-weight: 700; }
+
+/* ---- 食事・バイタルのカード ---- */
+.meal-card, .vital-card { margin-bottom: 12px; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.card-title { font-weight: 700; font-size: 1.05rem; }
+.time-label { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--muted); }
+.input-time { width: 7.5em; min-height: 40px; padding: 6px 8px; }
+.vital-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.vital-grid .field { margin-top: 0; }
+
+/* ---- 服薬 ---- */
+.med-list { display: grid; gap: 10px; }
+.med-btn {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 2px 12px;
+  min-height: 64px;
+  padding: 12px 16px;
+  border: 1px solid var(--pink-200);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.med-btn:active { background: var(--pink-50); }
+.med-name { font-weight: 700; font-size: 1.05rem; overflow-wrap: anywhere; }
+.med-count { font-weight: 700; color: var(--pink-700); font-variant-numeric: tabular-nums; }
+.med-limit, .dose-warning {
+  grid-column: 1 / -1;
+  margin: 4px 0 0;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--lemon);
+  font-size: 0.85rem;
+}
+.dose-warning { margin: 0 0 12px; padding: 8px 12px; }
+.dose-group { margin-bottom: 12px; }
+.dose-head { font-weight: 700; background: var(--pink-50); border-radius: var(--radius) var(--radius) 0 0; }
+.dose-group .rec-time { font-size: 1.2rem; min-width: 1.6em; }
+
+/* ---- 一覧の編集 ---- */
+.edit-row { gap: 6px; padding: 4px 8px 4px 0; }
+.edit-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 6px 16px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.edit-main:active { background: var(--pink-50); }
+.icon-btn {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--pink-700);
+  font-size: 1.1rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.icon-btn:disabled { opacity: 0.3; }
+
+/* ダイアログ内のボタンが3つのとき */
+.modal-actions .btn-ghost-danger { flex: 0.8; }
+.modal { max-height: calc(100dvh - 32px); overflow-y: auto; }
+.vital-grid .unit { width: 3.2em; }
