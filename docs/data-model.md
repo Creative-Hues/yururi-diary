@@ -56,7 +56,7 @@
 - **種類を増やしてもDBの作り直しが不要**:新しい `type` を使い始めるだけでよい。
 - `at` はタイムゾーンを持たない端末の時刻。`<input type="datetime-local">` の値をそのまま入れられる。
 
-### type ごとの data(フェーズ2の5種類は実装済み)
+### type ごとの data
 
 | type | フェーズ | data |
 |---|---|---|
@@ -65,9 +65,9 @@
 | `meal` | 2 | `{ slot, text }` … slot は `"breakfast"` / `"lunch"` / `"dinner"`(食事1回が1件。同じ「昼」が2件あってもよい) |
 | `medicine` | 2 | `{ medicineId, name, note }`(1回飲むごとに1件) |
 | `vital` | 2 | `{ temp, bpHigh, bpLow, pulse, spo2, weight }`(測定1回が1件。空の項目は null。「1回目」「2回目」は保存せず、その日の時刻順で数える。v0.2.0 の記録に残る `slot` は使わない) |
-| `diary` | 3 | `{ text, prompt, favorite: 0\|1 }` |
+| `diary` | 3 | `{ text, prompt, favorite: 0\|1 }`(prompt はひいたお題の文。なければ空) |
 | `hitokoto` | 3 | `{ text, prompt, favorite: 0\|1 }` |
-| `worksheet` | 3 | `{ worry, level: 0〜10, ideas }` |
+| `worksheet` | 3 | `{ worry, level: 0〜10 または null, ideas }`(どれか1つあれば保存できる) |
 
 - 選んだ選択肢は `{id, label}` の形で名前も一緒に残す(あとで選択肢を消したり名前を変えても、過去の記録の表示が変わらない)。
 - **服薬の①②の番号は保存しない**。表示のたびに「その日・同じ薬・時刻順」で数えるので、時刻を編集すると自動で並び直る。
@@ -97,13 +97,16 @@
 { color: "blue", name: "青", label: "元気", state: "どんな状態か", action: "何をするか", order: 0, updatedAt: "ISO" }
 ```
 
-color は `blue` / `yellow` / `red` / `black` の4件固定。
+color は `blue` / `yellow` / `red` / `black` の4件固定。`state` / `action` は複数行の文で、行頭が「・」の行は箇条書きとして表示する。
 
 ## consults(相談したいことメモ)
 
 ```js
-{ id: "uuid", text, createdAt: "ISO", updatedAt: "ISO", done: 0|1, doneAt: "ISO" | null }
+{ id: "uuid", text, at: "YYYY-MM-DDTHH:mm", createdAt: "ISO", updatedAt: "ISO", done: 0|1, doneAt: "ISO" | null }
 ```
+
+- `at` は書いた日時(本人が直せる)。
+- 未相談・相談済みで分けて見るものなので、records とは別のストアにしている。
 
 ## 初期データ(js/seed.js)
 
