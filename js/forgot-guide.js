@@ -9,10 +9,7 @@ export const FORGOT_GUIDE_HTML = `
 
     <div class="forgot-box">
       <p class="forgot-step-head">はじめに、たしかめること</p>
-      <ul>
-        <li>スマホの「Files(ファイル)」アプリの「ダウンロード」に、<span class="nowrap">「yururi-diary-backup-…」</span>という名前のファイルがあるか見てください。日付がいちばん新しいものを使います。</li>
-        <li>「ひとつやね」も使っている場合は、そちらの記録も一緒に空になります。先に「ひとつやね」でもバックアップを取っておいてください。</li>
-      </ul>
+      <p>スマホの「Files(ファイル)」アプリの「ダウンロード」に、<span class="nowrap">「yururi-diary-backup-…」</span>という名前のファイルがあるか見てください。日付がいちばん新しいものを使います。</p>
     </div>
 
     <ol class="forgot-steps">
