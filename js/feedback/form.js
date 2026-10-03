@@ -1,8 +1,9 @@
 // 不具合報告の部品:報告フォーム
-// renderFeedbackForm(el, feedback, { onSent, guardLeave })
+// renderFeedbackForm(el, feedback, { onSent, attachDraft })
 //   feedback  … createFeedback() で作ったもの
 //   onSent    … 送れたあとに呼ぶ(「送った報告」の画面へ移るなど)
-//   guardLeave… 入力の途中で戻ろうとしたときに確認するしくみ(なければ確認しない)
+//   attachDraft … 入力中の内容を下書きとして残すしくみ(アプリから渡す。なければ下書きなし)
+//                 attachDraft({ key, root, getState, setState }) → { done(), dispose() }
 
 import { collectEnv, FeedbackError } from './client.js';
 
@@ -22,7 +23,7 @@ function localStamp(d = new Date()) {
 const radios = (name, list) => list.map(([v, l]) => `
   <label class="fb-choice"><input type="radio" name="${name}" value="${v}"><span>${esc(l)}</span></label>`).join('');
 
-export async function renderFeedbackForm(el, feedback, { onSent, guardLeave } = {}) {
+export async function renderFeedbackForm(el, feedback, { onSent, attachDraft } = {}) {
   const { screens, ui } = feedback.options;
   const env = await collectEnv();
   // Pixel などは機種名を読めるので、最初から入れておく(直せる)
@@ -107,10 +108,6 @@ export async function renderFeedbackForm(el, feedback, { onSent, guardLeave } = 
   `;
 
   const form = el.querySelector('form');
-  let dirty = false;
-  form.addEventListener('input', () => { dirty = true; });
-  form.addEventListener('change', () => { dirty = true; });
-  const guard = guardLeave?.(() => dirty);
 
   // 種類が「要望」のときは、試したこと・頻度を出さない
   const kind = () => form.querySelector('[name="kind"]:checked').value;
@@ -121,6 +118,25 @@ export async function renderFeedbackForm(el, feedback, { onSent, guardLeave } = 
   };
   form.querySelectorAll('[name="kind"]').forEach((r) => r.addEventListener('change', applyKind));
   applyKind();
+
+  // 下書き(確認のチェックは毎回入れてもらうので、残さない)
+  const TEXTS = ['title', 'nickname', 'screen', 'content', 'device', 'wish'];
+  const RADIOS = ['kind', 'severity', 'frequency'];
+  const draft = await attachDraft?.({
+    key: `feedback:${feedback.options.appId}:new`,
+    root: el,
+    getState: () => ({
+      ...Object.fromEntries(TEXTS.map((n) => [n, form.querySelector(`[name="${n}"]`).value])),
+      ...Object.fromEntries(RADIOS.map((n) => [n, form.querySelector(`[name="${n}"]:checked`)?.value ?? ''])),
+      tried: [...form.querySelectorAll('[name="tried"]:checked')].map((c) => c.value),
+    }),
+    setState(v) {
+      for (const n of TEXTS) if (n in v) form.querySelector(`[name="${n}"]`).value = v[n];
+      for (const n of RADIOS) form.querySelectorAll(`[name="${n}"]`).forEach((r) => { r.checked = r.value === v[n]; });
+      form.querySelectorAll('[name="tried"]').forEach((c) => { c.checked = (v.tried ?? []).includes(c.value); });
+      applyKind();
+    },
+  });
 
   // 「どちらも試していない」は、ほかと同時に選べない
   form.querySelectorAll('[name="tried"]').forEach((c) => {
@@ -173,9 +189,9 @@ export async function renderFeedbackForm(el, feedback, { onSent, guardLeave } = 
     btn.textContent = '送信しています…';
     try {
       await feedback.send(report);
-      dirty = false;
+      await draft?.done();
       ui.toast('送信しました');
-      await onSent?.(guard);
+      await onSent?.();
     } catch (err) {
       ui.toast(err instanceof FeedbackError ? err.message : '送信できませんでした');
       btn.disabled = false;
@@ -185,5 +201,5 @@ export async function renderFeedbackForm(el, feedback, { onSent, guardLeave } = 
     }
   });
 
-  return () => guard?.release();
+  return () => draft?.dispose();
 }

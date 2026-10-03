@@ -4,8 +4,9 @@
 // #/consult-edit/<id> … 直す画面(相談済みの切り替え・削除も)
 
 import { get, getAll, put, del } from '../db.js';
-import { datetimeField, readAt, formActionsHtml, notFoundHtml, watchDirty } from '../components.js';
-import { href, guardLeave } from '../router.js';
+import { datetimeField, readAt, formActionsHtml, notFoundHtml } from '../components.js';
+import { href, leaveTo } from '../router.js';
+import { attachDraft, namedFields } from '../drafts.js';
 import { confirmDialog, toast } from '../ui.js';
 import { esc, localDateTime, nowIso, uuid, formatDateJa, parseLocalDateTime } from '../util.js';
 
@@ -71,7 +72,7 @@ export async function renderConsultEdit(el, [id], isStale) {
   return consultForm(el, rec);
 }
 
-function consultForm(el, rec) {
+async function consultForm(el, rec) {
   const initialAt = rec?.at ?? localDateTime();
   el.innerHTML = `
     <div class="card">
@@ -88,9 +89,9 @@ function consultForm(el, rec) {
     ${formActionsHtml(rec)}
   `;
 
-  let dirty = false;
-  watchDirty(el, () => { dirty = true; });
-  const guard = guardLeave(() => dirty);
+  // 下書き(新しく書くとき/直すときで別々)
+  const fields = namedFields(el, ['text', 'done', 'at']);
+  const draft = await attachDraft({ key: rec ? `consult:edit:${rec.id}` : 'consult:new', root: el, getState: fields.get, setState: fields.set });
 
   el.querySelector('#save-btn').addEventListener('click', async () => {
     const text = el.querySelector('[name="text"]').value.trim();
@@ -109,7 +110,8 @@ function consultForm(el, rec) {
       row.doneAt = done ? t : null;
     }
     await put('consults', row);
-    await guard.leave(href('consult'));
+    await draft.done();
+    await leaveTo(href('consult'));
     toast('保存しました');
   });
 
@@ -118,8 +120,9 @@ function consultForm(el, rec) {
     if (!ok) return;
     await del('consults', rec.id);
     toast('削除しました');
-    await guard.leave(href('consult'));
+    await draft.done();
+    await leaveTo(href('consult'));
   });
 
-  return guard.release;
+  return () => draft.dispose();
 }

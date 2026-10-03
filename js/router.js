@@ -2,7 +2,7 @@
 // GitHub Pages ではサーバー側の設定ができないため、# 方式にしている。
 
 import { ROUTES } from './routes.js';
-import { setHeader, confirmDialog } from './ui.js';
+import { setHeader } from './ui.js';
 import { esc } from './util.js';
 
 const view = () => document.getElementById('view');
@@ -26,79 +26,30 @@ export function goBack() {
   history.back();
 }
 
-// 入力画面:保存せずに戻ろうとしたら確認する
-// 開いたときに履歴を1つ積み、「戻る」(Android の戻る・ヘッダーの ‹)でそれが外れたら確認を出す。
-// 返り値の leave(steps 省略可) は、保存・削除のあとに確認なしで画面を離れるときに使う。
-export function guardLeave(isDirty) {
-  history.pushState({ guard: true }, '');
-  let active = true;
-  let asking = false;
-
-  const onPop = async () => {
-    // ダイアログの開け閉めで guard の位置に戻っただけなら、何もしない
-    if (!active || asking || history.state?.guard) return;
-    if (isDirty()) {
-      asking = true;
-      const leave = await confirmDialog({
-        title: '保存していない内容があります',
-        message: '保存せずに戻りますか?',
-        ok: '戻る',
-        cancel: '入力を続ける',
-      });
-      asking = false;
-      if (!leave) {
-        history.pushState({ guard: true }, '');
-        return;
-      }
-    }
-    release();
+// 入力画面で保存・削除したあとに、1つ前の画面へ戻る。
+// 戻った先が okHash と同じ画面の別の日(日時を直したとき)か、ホーム(入力画面を直接開いていたとき)なら、
+// okHash に置き換える。お気に入り一覧やカレンダーなど別の画面から来ていたら、そこに戻る。
+// (入力中の内容は下書きとして残るので、「保存せずに戻りますか?」の確認はしない)
+export function leaveTo(okHash) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      const landed = parseHash().name;
+      const target = okHash.replace(/^#\/?/, '').split('/')[0];
+      if (location.hash !== okHash && (landed === target || landed === '')) location.replace(okHash);
+      resolve();
+    };
+    window.addEventListener('popstate', done, { once: true });
+    setTimeout(done, 800);
     history.back();
-  };
-  const release = () => {
-    active = false;
-    window.removeEventListener('popstate', onPop);
-  };
-  window.addEventListener('popstate', onPop);
+  });
+}
 
-  return {
-    release,
-    // guard を外し、いまの画面を hash の画面に置きかえる(送信後に別の画面へ移るとき)
-    replaceWith(hash) {
-      release();
-      return new Promise((resolve) => {
-        let settled = false;
-        const done = () => {
-          if (settled) return;
-          settled = true;
-          location.replace(hash);
-          resolve();
-        };
-        window.addEventListener('popstate', done, { once: true });
-        setTimeout(done, 800);
-        history.back();
-      });
-    },
-    // 入力画面と guard の2つ分戻る。
-    // 戻った先が okHash と同じ画面の別の日(日時を直したとき)か、ホーム(入力画面を直接開いていたとき)なら、
-    // okHash に置き換える。お気に入り一覧など別の画面から来ていたら、そこに戻る。
-    leave(okHash) {
-      release();
-      return new Promise((resolve) => {
-        let settled = false;
-        const done = () => {
-          if (settled) return;
-          settled = true;
-          const landed = parseHash().name;
-          const target = okHash.replace(/^#\/?/, '').split('/')[0];
-          if (location.hash !== okHash && (landed === target || landed === '')) location.replace(okHash);
-          resolve();
-        };
-        window.addEventListener('popstate', done, { once: true });
-        setTimeout(done, 800);
-        history.go(-2);
-      });
-    },
-  };
+// いまの画面を描き直す(下書きを消したときなど)
+export function refresh() {
+  render();
 }
 
 let cleanup = null;

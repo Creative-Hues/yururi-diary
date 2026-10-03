@@ -34,22 +34,25 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* 画面の高さを 100vh / 100dvh で決めない:iPhone のホーム画面のアプリでは、この高さが見えている範囲より
+   少し大きくなることがあり、中身が収まっていても少しスクロールできてしまうため。背景の色は html に付ける。 */
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  background: var(--bg);
+  overscroll-behavior: none; /* 画面の端で伸びる動き(バウンス)を出さない */
+  touch-action: manipulation; /* ダブルタップでズームしない(中の要素にも効く) */
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
-  min-height: 100dvh;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
   font-size: 16px; /* iPhone は 16px 未満の入力欄でズームしてしまうため、16px を下回らない */
   line-height: 1.7;
   -webkit-tap-highlight-color: transparent;
-  overscroll-behavior-y: none;
+  overscroll-behavior: none;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -59,8 +62,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .app {
   max-width: 560px;
   margin: 0 auto;
-  min-height: 100vh;
-  min-height: 100dvh;
 }
 
 /* ---- ヘッダー ---- */
@@ -1033,3 +1034,17 @@ input[type="time"].input { min-width: 0; text-align: left; }
   border: 2px solid var(--pink-100);
 }
 .badge-new { background: var(--pink-500); color: #fff; }
+
+/* ---- 下書きを戻したときのお知らせ ---- */
+.draft-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 8px 8px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--lavender);
+  font-size: 0.9rem;
+}
+.draft-bar .btn { flex: none; }

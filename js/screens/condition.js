@@ -7,7 +7,8 @@ import { getChoices } from '../choices.js';
 import { LISTS } from '../constants.js';
 import { datetimeField, readAt, recItem, sortByAt, timeOf } from '../components.js';
 import { deleteRecordWithConfirm } from '../record-dialog.js';
-import { href, goBack } from '../router.js';
+import { href, goBack, refresh } from '../router.js';
+import { attachDraft } from '../drafts.js';
 import { toast } from '../ui.js';
 import { dateKey, esc, localDateTime } from '../util.js';
 
@@ -77,6 +78,28 @@ export async function renderCondition(el, [id], isStale) {
     c.addEventListener('click', () => c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true')));
   });
 
+  // 下書き(新しく記録するとき/直すときで別々)。選んだチップは id で覚える
+  const atInput = el.querySelector('[name="at"]');
+  const draft = await attachDraft({
+    key: rec ? `condition:edit:${rec.id}` : 'condition:new',
+    root: el,
+    getState: () => ({
+      ...Object.fromEntries(GROUPS.flatMap((g) => [
+        [g.key, [...el.querySelectorAll(`[data-group="${g.key}"] .chip[aria-pressed="true"]`)].map((c) => c.dataset.id)],
+        [`${g.key}Other`, el.querySelector(`[name="${g.key}Other"]`).value],
+      ])),
+      at: atInput.value,
+    }),
+    setState(v) {
+      for (const g of GROUPS) {
+        const ids = new Set(v[g.key] ?? []);
+        el.querySelectorAll(`[data-group="${g.key}"] .chip`).forEach((c) => c.setAttribute('aria-pressed', String(ids.has(c.dataset.id))));
+        el.querySelector(`[name="${g.key}Other"]`).value = v[`${g.key}Other`] ?? '';
+      }
+      if (v.at) atInput.value = v.at;
+    },
+  });
+
   el.querySelector('#save-btn').addEventListener('click', async () => {
     const data = {};
     for (const g of GROUPS) {
@@ -93,20 +116,26 @@ export async function renderCondition(el, [id], isStale) {
       rec.data = data;
       rec.at = at;
       await saveRecord(rec);
+      await draft.done();
       toast('保存しました');
       goBack();
     } else {
       await saveRecord(newRecord('condition', data, at));
+      await draft.done();
       toast('記録しました');
-      renderCondition(el, [], isStale);
+      refresh();
     }
   });
 
   el.querySelector('#delete-btn')?.addEventListener('click', async () => {
-    if (await deleteRecordWithConfirm(rec)) goBack();
+    if (!(await deleteRecordWithConfirm(rec))) return;
+    await draft.done();
+    goBack();
   });
 
   el.querySelectorAll('.rec-item').forEach((b) => {
     b.addEventListener('click', () => { location.hash = href('condition', b.dataset.id); });
   });
+
+  return () => draft.dispose();
 }

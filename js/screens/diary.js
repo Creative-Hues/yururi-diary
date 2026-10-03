@@ -11,10 +11,11 @@ import { getChoices } from '../choices.js';
 import { LISTS } from '../constants.js';
 import {
   dayNavHtml, bindDayNav, isDateKey, timeOf, datetimeField, readAt, sortByAt,
-  insertText, trackCursor, formActionsHtml, notFoundHtml, watchDirty,
+  insertText, trackCursor, formActionsHtml, notFoundHtml,
 } from '../components.js';
 import { deleteRecordWithConfirm } from '../record-dialog.js';
-import { href, guardLeave } from '../router.js';
+import { href, leaveTo } from '../router.js';
+import { attachDraft } from '../drafts.js';
 import { toast } from '../ui.js';
 import { dateKey, esc, localDateTime, formatDateJa, parseLocalDateTime } from '../util.js';
 
@@ -128,9 +129,6 @@ async function diaryForm(kind, el, { rec = null, date }, isStale) {
     <a class="link-row" href="${href('edit-diary')}">お題・書き出しを追加・並び替えする ›</a>
   `;
 
-  let dirty = false;
-  const setDirty = () => { dirty = true; };
-  watchDirty(el, setDirty);
   const ta = el.querySelector('[name="text"]');
   trackCursor(ta);
 
@@ -146,12 +144,10 @@ async function diaryForm(kind, el, { rec = null, date }, isStale) {
     const pool = prompts.map((p) => p.label).filter((p) => p !== prompt);
     if (!pool.length) return;
     prompt = pool[Math.floor(Math.random() * pool.length)];
-    setDirty();
     showPrompt();
   });
   box.querySelector('.prompt-clear').addEventListener('click', () => {
     prompt = '';
-    setDirty();
     showPrompt();
   });
 
@@ -162,14 +158,30 @@ async function diaryForm(kind, el, { rec = null, date }, isStale) {
 
   // お気に入り
   const favBtn = el.querySelector('.fav-toggle');
-  favBtn.addEventListener('click', () => {
-    favorite = favorite ? 0 : 1;
+  const showFav = () => {
     favBtn.setAttribute('aria-pressed', String(!!favorite));
     favBtn.textContent = `${favorite ? '★' : '☆'} お気に入り`;
-    setDirty();
+  };
+  favBtn.addEventListener('click', () => {
+    favorite = favorite ? 0 : 1;
+    showFav();
   });
 
-  const guard = guardLeave(() => dirty);
+  // 下書き(新しく書くとき/直すときで別々)
+  const atInput = el.querySelector('[name="at"]');
+  const draft = await attachDraft({
+    key: rec ? `${kind.type}:edit:${rec.id}` : `${kind.type}:new`,
+    root: el,
+    getState: () => ({ text: ta.value, prompt, favorite, at: atInput.value }),
+    setState(v) {
+      ta.value = v.text ?? '';
+      prompt = v.prompt ?? '';
+      favorite = v.favorite ? 1 : 0;
+      if (v.at) atInput.value = v.at;
+      showPrompt();
+      showFav();
+    },
+  });
 
   el.querySelector('#save-btn').addEventListener('click', async () => {
     const text = ta.value.trim();
@@ -186,15 +198,18 @@ async function diaryForm(kind, el, { rec = null, date }, isStale) {
     } else {
       await saveRecord(newRecord(kind.type, data, at));
     }
-    await guard.leave(href(kind.view, at.slice(0, 10)));
+    await draft.done();
+    await leaveTo(href(kind.view, at.slice(0, 10)));
     toast('保存しました');
   });
 
   el.querySelector('#delete-btn')?.addEventListener('click', async () => {
-    if (await deleteRecordWithConfirm(rec)) await guard.leave(href(kind.view, rec.date));
+    if (!(await deleteRecordWithConfirm(rec))) return;
+    await draft.done();
+    await leaveTo(href(kind.view, rec.date));
   });
 
-  return guard.release;
+  return () => draft.dispose();
 }
 
 // ---- お気に入り ----

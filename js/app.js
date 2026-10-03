@@ -1,5 +1,6 @@
 // 起動処理
 
+import './no-zoom.js';
 import { APP_VERSION } from './config.js';
 import { openDB, getMeta, setMeta } from './db.js';
 import { runSeeds } from './seed.js';

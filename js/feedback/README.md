@@ -6,7 +6,7 @@
 | ファイル | 中身 |
 |---|---|
 | `client.js` | `createFeedback(options)`:中継サーバーとのやりとり・匿名ID・送った報告の控え。`collectEnv()`:自動で付ける情報 |
-| `form.js` | `renderFeedbackForm(el, feedback, { onSent, guardLeave })`:報告フォーム |
+| `form.js` | `renderFeedbackForm(el, feedback, { onSent, attachDraft })`:報告フォーム(attachDraft を渡すと書きかけが下書きとして残る) |
 | `sent.js` | `renderSentReports(el, feedback, { newHref, onSeen })`:送った報告(状態・定型文の返信・1回だけの追記) |
 | `../../css/feedback.css` | 見た目 |
 

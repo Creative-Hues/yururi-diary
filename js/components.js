@@ -132,13 +132,6 @@ export function formActionsHtml(rec, saveLabel = '保存する') {
 
 export const notFoundHtml = '<div class="card"><p>この記録は見つかりませんでした。</p></div>';
 
-// 入力画面の中の入力欄すべてで「変更あり」を記録する
-export function watchDirty(root, onDirty) {
-  root.querySelectorAll('input, textarea').forEach((i) => {
-    i.addEventListener('input', onDirty);
-    i.addEventListener('change', onDirty);
-  });
-}
 
 // 数値を表示用に(計算などで出る 36.800000000000004 のような端数を丸める。最大小数2桁)
 export const fmtNum = (v) => (v == null || v === '' ? '' : String(Math.round(Number(v) * 100) / 100));

@@ -7,7 +7,8 @@ import { get, getRecordsByType, newRecord, saveRecord } from '../db.js';
 import { MEAL_SLOTS } from '../constants.js';
 import { dayNavHtml, bindDayNav, isDateKey, timeOf, datetimeField, readAt } from '../components.js';
 import { deleteRecordWithConfirm } from '../record-dialog.js';
-import { href, guardLeave } from '../router.js';
+import { href, leaveTo } from '../router.js';
+import { attachDraft } from '../drafts.js';
 import { toast } from '../ui.js';
 import { dateKey, esc, localDateTime } from '../util.js';
 
@@ -65,7 +66,7 @@ export async function renderMealEdit(el, [id], isStale) {
   return mealForm(el, { rec, date: rec.date, slot: rec.data.slot });
 }
 
-function mealForm(el, { rec = null, date, slot }) {
+async function mealForm(el, { rec = null, date, slot }) {
   const isToday = date === dateKey();
   const initialAt = rec?.at ?? (isToday ? localDateTime() : `${date}T${slotInfo(slot).defaultTime}`);
 
@@ -89,23 +90,36 @@ function mealForm(el, { rec = null, date, slot }) {
     </div>
   `;
 
-  let dirty = false;
   // ほかの日の新しい記録で、時刻をまだ触っていなければ、朝・昼・晩に合わせて時刻を変える
   let timeTouched = !!rec || isToday;
   const atInput = el.querySelector('[name="at"]');
-  el.querySelector('[name="text"]').addEventListener('input', () => { dirty = true; });
-  atInput.addEventListener('input', () => { dirty = true; timeTouched = true; });
-  atInput.addEventListener('change', () => { dirty = true; timeTouched = true; });
+  const textInput = el.querySelector('[name="text"]');
+  atInput.addEventListener('input', () => { timeTouched = true; });
+  atInput.addEventListener('change', () => { timeTouched = true; });
+  const showSlot = () => el.querySelectorAll('.seg-btn').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.slot === slot)));
   el.querySelectorAll('.seg-btn').forEach((b) => {
     b.addEventListener('click', () => {
       slot = b.dataset.slot;
-      dirty = true;
-      el.querySelectorAll('.seg-btn').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      showSlot();
       if (!timeTouched) atInput.value = `${date}T${slotInfo(slot).defaultTime}`;
     });
   });
 
-  const guard = guardLeave(() => dirty);
+  // 下書き(新しく記録するとき/直すときで別々)
+  const draft = await attachDraft({
+    key: rec ? `meal:edit:${rec.id}` : 'meal:new',
+    root: el,
+    getState: () => ({ slot, text: textInput.value, at: atInput.value }),
+    setState(v) {
+      if (v.slot) slot = v.slot;
+      textInput.value = v.text ?? '';
+      if (v.at) {
+        atInput.value = v.at;
+        timeTouched = true;
+      }
+      showSlot();
+    },
+  });
 
   el.querySelector('#save-btn').addEventListener('click', async () => {
     const text = el.querySelector('[name="text"]').value.trim();
@@ -121,13 +135,16 @@ function mealForm(el, { rec = null, date, slot }) {
     } else {
       await saveRecord(newRecord('meal', { slot, text }, at));
     }
-    await guard.leave(href('meal', at.slice(0, 10)));
+    await draft.done();
+    await leaveTo(href('meal', at.slice(0, 10)));
     toast('保存しました');
   });
 
   el.querySelector('#delete-btn')?.addEventListener('click', async () => {
-    if (await deleteRecordWithConfirm(rec)) await guard.leave(href('meal', rec.date));
+    if (!(await deleteRecordWithConfirm(rec))) return;
+    await draft.done();
+    await leaveTo(href('meal', rec.date));
   });
 
-  return guard.release;
+  return () => draft.dispose();
 }

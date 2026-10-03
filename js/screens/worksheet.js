@@ -5,9 +5,10 @@
 
 import { get, getAll, newRecord, saveRecord } from '../db.js';
 import { LEVEL_MIN, LEVEL_MAX } from '../constants.js';
-import { datetimeField, readAt, formActionsHtml, notFoundHtml, watchDirty, timeOf } from '../components.js';
+import { datetimeField, readAt, formActionsHtml, notFoundHtml, timeOf } from '../components.js';
 import { deleteRecordWithConfirm } from '../record-dialog.js';
-import { href, guardLeave } from '../router.js';
+import { href, leaveTo } from '../router.js';
+import { attachDraft, namedFields } from '../drafts.js';
 import { toast } from '../ui.js';
 import { esc, localDateTime, formatDateJa, parseLocalDateTime } from '../util.js';
 
@@ -57,7 +58,7 @@ export async function renderWorksheetEdit(el, [id], isStale) {
   return worksheetForm(el, rec);
 }
 
-function worksheetForm(el, rec) {
+async function worksheetForm(el, rec) {
   const initialAt = rec?.at ?? localDateTime();
   let level = rec?.data.level ?? null;
 
@@ -84,18 +85,27 @@ function worksheetForm(el, rec) {
     ${formActionsHtml(rec)}
   `;
 
-  let dirty = false;
-  watchDirty(el, () => { dirty = true; });
+  const showLevel = () => el.querySelectorAll('.level-btn').forEach((x) => x.setAttribute('aria-pressed', String(Number(x.dataset.level) === level)));
   el.querySelectorAll('.level-btn').forEach((b) => {
     b.addEventListener('click', () => {
       const n = Number(b.dataset.level);
       level = level === n ? null : n;
-      dirty = true;
-      el.querySelectorAll('.level-btn').forEach((x) => x.setAttribute('aria-pressed', String(Number(x.dataset.level) === level)));
+      showLevel();
     });
   });
 
-  const guard = guardLeave(() => dirty);
+  // 下書き(新しく書くとき/直すときで別々)
+  const fields = namedFields(el, ['worry', 'ideas', 'at']);
+  const draft = await attachDraft({
+    key: rec ? `worksheet:edit:${rec.id}` : 'worksheet:new',
+    root: el,
+    getState: () => ({ ...fields.get(), level }),
+    setState(v) {
+      fields.set(v);
+      level = v.level ?? null;
+      showLevel();
+    },
+  });
 
   el.querySelector('#save-btn').addEventListener('click', async () => {
     const worry = el.querySelector('[name="worry"]').value.trim();
@@ -113,13 +123,16 @@ function worksheetForm(el, rec) {
     } else {
       await saveRecord(newRecord('worksheet', data, at));
     }
-    await guard.leave(href('worksheet'));
+    await draft.done();
+    await leaveTo(href('worksheet'));
     toast('保存しました');
   });
 
   el.querySelector('#delete-btn')?.addEventListener('click', async () => {
-    if (await deleteRecordWithConfirm(rec)) await guard.leave(href('worksheet'));
+    if (!(await deleteRecordWithConfirm(rec))) return;
+    await draft.done();
+    await leaveTo(href('worksheet'));
   });
 
-  return guard.release;
+  return () => draft.dispose();
 }

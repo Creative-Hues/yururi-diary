@@ -6,7 +6,8 @@
 import { renderFeedbackForm } from '../feedback/form.js';
 import { renderSentReports } from '../feedback/sent.js';
 import { feedback, feedbackEnabled, refreshFeedbackBadge } from '../feedback-setup.js';
-import { href, guardLeave } from '../router.js';
+import { href } from '../router.js';
+import { attachDraft } from '../drafts.js';
 
 const offHtml = '<div class="card"><p>この機能はいまお休み中です。</p></div>';
 
@@ -17,9 +18,9 @@ export function renderFeedback(el, params, isStale) {
     return;
   }
   return renderFeedbackForm(el, feedback, {
-    guardLeave,
+    attachDraft,
     // 送れたら、フォームの画面を「送った報告」に置きかえる(戻るで設定に戻る)
-    onSent: (guard) => guard.replaceWith(href('feedback-sent')),
+    onSent: () => location.replace(href('feedback-sent')),
   });
 }
 

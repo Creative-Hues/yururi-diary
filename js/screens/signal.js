@@ -5,8 +5,9 @@
 // 色を選んでも履歴は増やさない(戻る1回でホームへ戻れる)。
 
 import { get, getAll, put } from '../db.js';
-import { linesHtml, insertText, trackCursor, watchDirty } from '../components.js';
-import { href, guardLeave } from '../router.js';
+import { linesHtml, insertText, trackCursor } from '../components.js';
+import { href, leaveTo } from '../router.js';
+import { attachDraft, namedFields } from '../drafts.js';
 import { toast } from '../ui.js';
 import { esc, nowIso } from '../util.js';
 
@@ -74,14 +75,14 @@ export async function renderSignalEdit(el, [color], isStale) {
     </div>
   `;
 
-  let dirty = false;
-  watchDirty(el, () => { dirty = true; });
   el.querySelectorAll('textarea').forEach(trackCursor);
   el.querySelectorAll('.bullet-btn').forEach((b) => {
     b.addEventListener('click', () => insertText(el.querySelector(`[name="${b.dataset.for}"]`), '・'));
   });
 
-  const guard = guardLeave(() => dirty);
+  // 下書き(色ごと)
+  const fields = namedFields(el, ['label', 'state', 'action']);
+  const draft = await attachDraft({ key: `signal:edit:${sig.color}`, root: el, getState: fields.get, setState: fields.set });
 
   el.querySelector('#save-btn').addEventListener('click', async () => {
     const val = (n) => el.querySelector(`[name="${n}"]`).value;
@@ -92,9 +93,10 @@ export async function renderSignalEdit(el, [color], isStale) {
       action: val('action').replace(/\s+$/, ''),
       updatedAt: nowIso(),
     });
-    await guard.leave(href('signal', sig.color));
+    await draft.done();
+    await leaveTo(href('signal', sig.color));
     toast('保存しました');
   });
 
-  return guard.release;
+  return () => draft.dispose();
 }

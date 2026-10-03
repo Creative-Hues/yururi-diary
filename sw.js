@@ -16,6 +16,8 @@ const ASSETS = [
   './css/feedback.css',
   './js/version.js',
   './js/app.js',
+  './js/no-zoom.js',
+  './js/drafts.js',
   './js/config.js',
   './js/util.js',
   './js/db.js',

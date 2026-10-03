@@ -22,6 +22,7 @@
 |---|---|
 | `anonId` | 匿名ID(初回起動時に作成。不具合報告で使う) |
 | `feedback` | 不具合報告:送った報告の控え・見た返信の数・最後に読み込んだ日時(js/feedback) |
+| `draft:<画面>:new` / `draft:<画面>:edit:<id>` | 入力画面の下書き `{ value, savedAt }`(js/drafts.js)。新しく記録するときと直すときで別。保存・削除で消える。信号機は `draft:signal:edit:<色>` |
 | `installedAt` | 初回起動日時(ISO) |
 | `seedVersion` | 初期データをどこまで入れたか |
 | `lastBackupAt` | 最後にバックアップした日時(ISO) |

@@ -9,7 +9,8 @@ import { getSettings } from '../prefs.js';
 import { VITAL_FIELDS } from '../constants.js';
 import { dayNavHtml, bindDayNav, isDateKey, timeOf, parseNum, datetimeField, readAt, sortByAt, fmtNum } from '../components.js';
 import { deleteRecordWithConfirm } from '../record-dialog.js';
-import { href, guardLeave } from '../router.js';
+import { href, leaveTo } from '../router.js';
+import { attachDraft, namedFields } from '../drafts.js';
 import { toast } from '../ui.js';
 import { dateKey, esc, localDateTime } from '../util.js';
 
@@ -74,7 +75,7 @@ export async function renderVitalEdit(el, [id], isStale) {
   return vitalForm(el, { rec, date: rec.date });
 }
 
-function vitalForm(el, { rec = null, date }) {
+async function vitalForm(el, { rec = null, date }) {
   const initialAt = rec?.at ?? (date === dateKey() ? localDateTime() : `${date}T${OTHER_DAY_TIME}`);
 
   el.innerHTML = `
@@ -98,13 +99,14 @@ function vitalForm(el, { rec = null, date }) {
     </div>
   `;
 
-  let dirty = false;
-  el.querySelectorAll('.card .input').forEach((i) => {
-    i.addEventListener('input', () => { dirty = true; });
-    i.addEventListener('change', () => { dirty = true; });
+  // 下書き(新しく記録するとき/直すときで別々)
+  const fields = namedFields(el, [...VITAL_FIELDS.map((f) => f.key), 'at']);
+  const draft = await attachDraft({
+    key: rec ? `vital:edit:${rec.id}` : 'vital:new',
+    root: el,
+    getState: fields.get,
+    setState: fields.set,
   });
-
-  const guard = guardLeave(() => dirty);
 
   el.querySelector('#save-btn').addEventListener('click', async () => {
     const data = {};
@@ -128,13 +130,16 @@ function vitalForm(el, { rec = null, date }) {
     } else {
       await saveRecord(newRecord('vital', data, at));
     }
-    await guard.leave(href('vital', at.slice(0, 10)));
+    await draft.done();
+    await leaveTo(href('vital', at.slice(0, 10)));
     toast('保存しました');
   });
 
   el.querySelector('#delete-btn')?.addEventListener('click', async () => {
-    if (await deleteRecordWithConfirm(rec)) await guard.leave(href('vital', rec.date));
+    if (!(await deleteRecordWithConfirm(rec))) return;
+    await draft.done();
+    await leaveTo(href('vital', rec.date));
   });
 
-  return guard.release;
+  return () => draft.dispose();
 }
