@@ -4,7 +4,7 @@
 
 import { getRecordsByType, newRecord, saveRecord } from '../db.js';
 import { MOODS, TOUGH_MOODS, moodLabel } from '../constants.js';
-import { recItem, sortByAt, timeOf } from '../components.js';
+import { recItem, sortByAt, timeOf, editLinkHtml, headRowHtml } from '../components.js';
 import { editRecordDialog } from '../record-dialog.js';
 import { onToughMood } from '../support.js';
 import { getSettings, setSetting, moodEmoji } from '../prefs.js';
@@ -20,7 +20,7 @@ export async function renderMood(el, params, isStale) {
   const rerender = () => renderMood(el, params, isStale);
 
   el.innerHTML = `
-    <p class="lead">いまの気分は?</p>
+    ${headRowHtml('<p class="lead">いまの気分は?</p>', editLinkHtml(href('edit-mood-emoji'), '絵文字を編集'))}
     <div class="mood-list">
       ${MOODS.map((m) => `<button type="button" class="mood-btn" data-level="${m.level}"><span class="mood-emoji" aria-hidden="true">${esc(moodEmoji(settings, m.level))}</span><span>${esc(m.label)}</span></button>`).join('')}
     </div>

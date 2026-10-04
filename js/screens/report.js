@@ -9,7 +9,7 @@ import { getAll, getRecordsInRange } from '../db.js';
 import { getChoices } from '../choices.js';
 import { MOODS, LISTS, moodLabel } from '../constants.js';
 import { isDateKey, shiftDate, timeOf, sortByAt, circled, fmtNum } from '../components.js';
-import { weekChart, autoScale } from '../charts.js';
+import { weekChart, autoScale, bindCharts } from '../charts.js';
 import { numberDoses } from '../doses.js';
 import { loadMonth, monthGridHtml, legendHtml } from '../month-calendar.js';
 import { moodEmoji } from '../prefs.js';
@@ -20,6 +20,7 @@ import { APP_SHORT_NAME, APP_VERSION } from '../config.js';
 import { dateKey, esc, formatDateJa, formatDateTimeJa, parseLocalDateTime } from '../util.js';
 
 const MOOD_VALUE = Object.fromEntries(MOODS.map((m, i) => [m.level, MOODS.length - 1 - i])); // とても良い=4 … とてもしんどい=0
+const moodOfValue = (v) => MOODS[MOODS.length - 1 - v];
 const dayLabel = (d) => formatDateJa(parseLocalDateTime(`${d}T00:00`));
 const shortDay = (d) => dayLabel(d).replace(/^\d+月/, (s) => s.replace('月', '/')).replace('日', '');
 const none = (text = '記録なし') => `<p class="rp-none">${text}</p>`;
@@ -47,10 +48,22 @@ function moodSection(recs, days, isWeek, settings) {
     padL: 78,
     height: 170,
     label: '1週間の気分の変化',
+    format: (v) => `${moodEmoji(settings, moodOfValue(v).level)} ${moodOfValue(v).label}`,
+    pointLabel: (v) => moodEmoji(settings, moodOfValue(v).level),
   });
   const counts = MOODS.map((m) => [m.label, recs.filter((r) => r.data.level === m.level).length]).filter(([, n]) => n);
-  return section('気分', `${chart}<p class="rp-counts">${counts.map(([l, n]) => `<span>${esc(l)} ${n}回</span>`).join('')}</p>`, `${recs.length}回記録`);
+  return section('気分', `${chartHint}${chart}<p class="rp-counts">${counts.map(([l, n]) => `<span>${esc(l)} ${n}回</span>`).join('')}</p>`, `${recs.length}回記録`);
 }
+
+// グラフの使い方(画面だけ。印刷には出さない)
+const chartHint = '<p class="chart-hint no-print">点をタップすると、日時と数値が出ます。2本の指で広げると拡大、ダブルタップで元の大きさに戻ります。</p>';
+
+// 血圧の上(実線)・下(水色の点線・白抜きの点)の見本。白黒で印刷しても、線の形で見分けられる
+const bpKey = `
+  <span class="ch-keys">
+    <span class="ch-key"><svg viewBox="0 0 24 8" aria-hidden="true"><line class="ch-line" x1="1" x2="23" y1="4" y2="4"/><circle class="ch-dot" cx="12" cy="4" r="2.6"/></svg>上</span>
+    <span class="ch-key"><svg viewBox="0 0 24 8" aria-hidden="true"><line class="ch-line sub" x1="1" x2="23" y1="4" y2="4"/><circle class="ch-dot sub" cx="12" cy="4" r="2.6"/></svg>下</span>
+  </span>`;
 
 // ---- 体調 ----
 function conditionSection(recs, isWeek) {
@@ -123,7 +136,7 @@ function medicineSection(recs, meds, days, isWeek) {
 // ---- バイタル ----
 const VITAL_CHARTS = [
   { title: '体温', unit: '℃', keys: ['temp'], decimals: 1, minSpan: 1 },
-  { title: '血圧', unit: 'mmHg', keys: ['bpHigh', 'bpLow'], minSpan: 20 },
+  { title: '血圧', unit: 'mmHg', keys: ['bpHigh', 'bpLow'], names: ['上', '下'], minSpan: 20 },
   { title: '脈拍', unit: '回/分', keys: ['pulse'], minSpan: 10 },
   { title: '酸素(SpO2)', unit: '%', keys: ['spo2'], minSpan: 4 },
   { title: '体重', unit: 'kg', keys: ['weight'], decimals: 1, minSpan: 2 },
@@ -145,15 +158,15 @@ function vitalSection(recs, days, isWeek) {
     const values = recs.flatMap((r) => c.keys.map((k) => r.data[k])).filter((v) => v != null);
     if (!values.length) return `<div class="rp-chart"><h3 class="rp-subtitle">${c.title}<span class="rp-note">${c.unit}</span></h3>${none()}</div>`;
     const scale = autoScale(values, { decimals: c.decimals ?? 0, minSpan: c.minSpan });
-    const series = c.keys.map((k, i) => ({ dashed: i > 0, points: recs.map((r) => ({ at: r.at, value: r.data[k] })) }));
+    const series = c.keys.map((k, i) => ({ sub: i > 0, name: c.names?.[i] ?? '', points: recs.map((r) => ({ at: r.at, value: r.data[k] })) }));
     const count = recs.filter((r) => c.keys.some((k) => r.data[k] != null)).length;
     return `
       <div class="rp-chart">
-        <h3 class="rp-subtitle">${c.title}<span class="rp-note">${c.unit}${c.keys.length > 1 ? '(実線:上・点線:下)' : ''}</span></h3>
-        ${weekChart({ days, series, ...scale, decimals: c.decimals ?? 0, valueLabels: count <= 10, label: `${c.title}の推移` })}
+        <h3 class="rp-subtitle">${c.title}<span class="rp-note">${c.unit}</span>${c.keys.length > 1 ? bpKey : ''}</h3>
+        ${weekChart({ days, series, ...scale, decimals: c.decimals ?? 0, unit: c.unit, valueLabels: count <= 10, label: `${c.title}の推移` })}
       </div>`;
   }).join('');
-  return section('バイタル', `<div class="rp-charts">${charts}</div>`, `${recs.length}回測定`);
+  return section('バイタル', `${chartHint}<div class="rp-charts">${charts}</div>`, `${recs.length}回測定`);
 }
 
 // ---- 相談したいことメモ(未相談) ----
@@ -241,4 +254,7 @@ export async function renderReport(el, [modeParam, dateParam], isStale) {
     window.addEventListener('afterprint', restore, { once: true });
     window.print();
   });
+
+  // 1週間分のグラフの拡大・点のタップ(画面を離れたら印刷の見張りを外す)
+  return bindCharts(el);
 }

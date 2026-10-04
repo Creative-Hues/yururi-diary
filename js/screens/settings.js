@@ -9,12 +9,20 @@ import { href } from '../router.js';
 import { ROUTES } from '../routes.js';
 import { canPromptInstall, promptInstall, isPersisted } from '../pwa.js';
 import { toast } from '../ui.js';
+import { PENCIL_SVG } from '../components.js';
 import { esc, formatDateTimeJa, isStandalone } from '../util.js';
 
 function linkRow(key, note = '') {
   const r = ROUTES[key];
   const badge = r.phase ? `<span class="badge">準備中</span>` : '';
   return `<a class="row row-link" href="${href(key)}"><span>${esc(r.title)}${note}</span>${badge}<span class="chev" aria-hidden="true">›</span></a>`;
+}
+
+// 選択肢・名前を編集する画面(各画面の見出しの横の「✎」ボタンと同じ行き先)
+const EDIT_ROUTES = ['edit-mood-emoji', 'edit-condition', 'edit-medicine', 'edit-med-timings', 'edit-diary', 'edit-consult-tags', 'edit-levels', 'calm'];
+
+function editRow(key) {
+  return `<a class="row row-link edit-row-link" href="${href(key)}"><span class="edit-row-icon">${PENCIL_SVG}</span><span class="edit-row-title">${esc(ROUTES[key].title)}</span><span class="chev" aria-hidden="true">›</span></a>`;
 }
 
 function isIOS() {
@@ -54,13 +62,13 @@ export async function renderSettings(el, params, isStale) {
             <button type="button" class="step-btn" data-step="1" aria-label="ふやす">＋</button>
           </div>
         </div>
-        ${linkRow('edit-mood-emoji')}
-        ${linkRow('edit-condition')}
-        ${linkRow('edit-medicine')}
-        ${linkRow('edit-med-timings')}
-        ${linkRow('edit-diary')}
-        ${linkRow('edit-consult-tags')}
-        ${linkRow('edit-levels')}
+      </div>
+    </section>
+
+    <section class="group">
+      <h2 class="section-title">選択肢・名前の編集</h2>
+      <div class="card rows">
+        ${EDIT_ROUTES.map(editRow).join('')}
       </div>
     </section>
 

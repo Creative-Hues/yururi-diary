@@ -8,7 +8,7 @@
 import { get, getAll, newRecord, saveRecord } from '../db.js';
 import { LEVEL_MIN, LEVEL_MAX } from '../constants.js';
 import { getSettings, setSetting, levelName, DEFAULT_SETTINGS } from '../prefs.js';
-import { datetimeField, readAt, formActionsHtml, notFoundHtml, timeOf } from '../components.js';
+import { datetimeField, readAt, formActionsHtml, notFoundHtml, timeOf, editLinkHtml } from '../components.js';
 import { deleteRecordWithConfirm } from '../record-dialog.js';
 import { href, leaveTo } from '../router.js';
 import { attachDraft, namedFields } from '../drafts.js';
@@ -78,7 +78,11 @@ async function worksheetForm(el, rec, isStale) {
   el.innerHTML = `
     <div class="card">
       <div class="field">
-        <span class="field-label">つらさ(タップで選ぶ・もう一度タップで取り消し)</span>
+        <div class="field-label-row">
+          <span class="field-label">つらさ</span>
+          ${editLinkHtml(href('edit-levels'), '段階の名前を編集')}
+        </div>
+        <p class="small muted level-note">タップで選ぶ・もう一度タップで取り消し</p>
         <div class="level-list" role="group" aria-label="つらさ">
           ${LEVELS.map((n) => `
             <button type="button" class="level-btn" data-level="${n}" aria-pressed="${n === level}">
@@ -94,7 +98,6 @@ async function worksheetForm(el, rec, isStale) {
     </div>
     <p class="hint">書けるところだけで保存できます。</p>
     ${formActionsHtml(rec)}
-    <a class="link-row" href="${href('edit-levels')}">つらさの名前を変える ›</a>
   `;
 
   const showLevel = () => el.querySelectorAll('.level-btn').forEach((x) => x.setAttribute('aria-pressed', String(Number(x.dataset.level) === level)));

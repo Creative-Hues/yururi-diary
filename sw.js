@@ -65,6 +65,7 @@ const ASSETS = [
   './js/feedback/sent.js',
   './js/feedback-setup.js',
   './js/screens/feedback.js',
+  './js/screens/help.js',
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',

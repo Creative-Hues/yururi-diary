@@ -10,7 +10,7 @@
 import { get, getAll, put, del } from '../db.js';
 import { getChoices } from '../choices.js';
 import { LISTS } from '../constants.js';
-import { datetimeField, readAt, formActionsHtml, notFoundHtml, timeOf } from '../components.js';
+import { datetimeField, readAt, formActionsHtml, notFoundHtml, timeOf, editLinkHtml, headRowHtml } from '../components.js';
 import { href, leaveTo } from '../router.js';
 import { attachDraft, namedFields } from '../drafts.js';
 import { confirmDialog, toast } from '../ui.js';
@@ -60,6 +60,7 @@ export async function renderConsult(el, [tagId], isStale) {
 
   el.innerHTML = `
     <a class="btn btn-primary btn-block add-btn" href="${href('consult-new')}">＋ 書く</a>
+    ${headRowHtml(`<span class="section-title">${tags.length ? 'タグでしぼりこむ' : 'タグ(誰に向けたメモか)'}</span>`, editLinkHtml(href('edit-consult-tags'), 'タグを編集'))}
     ${tags.length ? `
       <div class="filter-chips" role="group" aria-label="タグでしぼりこむ">
         <button type="button" class="filter-chip" data-tag="" aria-pressed="${!filter}">すべて</button>
@@ -74,7 +75,6 @@ export async function renderConsult(el, [tagId], isStale) {
         <summary class="section-title">相談済み(${done.length})</summary>
         ${done.map(card).join('')}
       </details>` : ''}
-    <a class="link-row" href="${href('edit-consult-tags')}">タグを追加・並び替えする ›</a>
   `;
 
   el.querySelectorAll('[data-tag]').forEach((b) => {
@@ -125,10 +125,13 @@ async function consultForm(el, rec, isStale) {
         <textarea class="input" name="text" rows="6">${esc(rec?.text ?? '')}</textarea>
       </label>
       <div class="field">
-        <span class="field-label">誰に相談したいか(いくつでも選べます)</span>
+        <div class="field-label-row">
+          <span class="field-label">誰に相談したいか(いくつでも選べます)</span>
+          ${editLinkHtml(href('edit-consult-tags'), 'タグを編集')}
+        </div>
         ${tags.length
           ? `<div class="chips" data-group="tags">${tags.map((t) => `<button type="button" class="chip" data-id="${esc(t.id)}" aria-pressed="${selected.has(t.id)}">${esc(t.label)}</button>`).join('')}</div>`
-          : '<p class="small muted">タグはまだありません。下の「タグを追加・並び替えする」から追加できます。</p>'}
+          : '<p class="small muted">タグはまだありません。「タグを編集」から追加できます。</p>'}
       </div>
       <label class="check-row">
         <input type="checkbox" name="done" ${rec?.done ? 'checked' : ''}>
@@ -137,7 +140,6 @@ async function consultForm(el, rec, isStale) {
       <div class="mt-field">${datetimeField(initialAt, '書いた日時')}</div>
     </div>
     ${formActionsHtml(rec)}
-    <a class="link-row" href="${href('edit-consult-tags')}">タグを追加・並び替えする ›</a>
   `;
 
   const chips = [...el.querySelectorAll('[data-group="tags"] .chip')];

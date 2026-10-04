@@ -7,7 +7,7 @@
 import { get, getRecordsByType, newRecord, saveRecord } from '../db.js';
 import { getChoices } from '../choices.js';
 import { LISTS, CHOICE_KINDS, PERIOD_PHASES, periodPhaseLabel } from '../constants.js';
-import { datetimeField, readAt, recItem, sortByAt, timeOf } from '../components.js';
+import { datetimeField, readAt, recItem, sortByAt, timeOf, editLinkHtml, headRowHtml } from '../components.js';
 import { deleteRecordWithConfirm } from '../record-dialog.js';
 import { href, goBack, refresh } from '../router.js';
 import { attachDraft } from '../drafts.js';
@@ -54,7 +54,9 @@ export async function renderCondition(el, [id], isStale) {
     const opts = [...choices[i], ...selected.filter((s) => !choices[i].some((c) => c.id === s.id))];
     return `
       <section class="group">
-        <h2 class="section-title">${g.title}</h2>
+        ${i === 0
+          ? headRowHtml(`<h2 class="section-title">${g.title}</h2>`, editLinkHtml(href('edit-condition'), '選択肢を編集'))
+          : `<h2 class="section-title">${g.title}</h2>`}
         <div class="card">
           <div class="chips" data-group="${g.key}">
             ${opts.map((c) => `<button type="button" class="chip" data-id="${esc(c.id)}" data-label="${esc(c.label)}" data-kind="${esc(c.kind ?? '')}" aria-pressed="${selectedIds.has(c.id)}">${esc(c.label)}</button>`).join('')}
@@ -83,7 +85,6 @@ export async function renderCondition(el, [id], isStale) {
           ? `<div class="card rows">${sortByAt(todays).map((r) => recItem({ id: r.id, time: timeOf(r.at), main: esc(conditionSummary(r.data)) })).join('')}</div>`
           : '<p class="empty">まだ記録はありません</p>'}
       </section>`}
-    <a class="link-row" href="${href('edit-condition')}">選択肢を追加・並び替えする ›</a>
   `;
 
   // 生理を選んでいるときだけ「はじまった/おわった」を出す

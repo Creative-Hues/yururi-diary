@@ -9,6 +9,7 @@ export function setHeader({ title, isHome }) {
   $('#hdr-title').textContent = isHome ? APP_NAME : title;
   $('#hdr-back').hidden = isHome;
   $('#hdr-settings').hidden = !isHome;
+  $('#hdr-help').hidden = !isHome;
   document.title = isHome ? APP_NAME : `${title} - ${APP_NAME}`;
 }
 

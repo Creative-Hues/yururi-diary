@@ -5,7 +5,7 @@
 // 色を選んでも履歴は増やさない(戻る1回でホームへ戻れる)。
 
 import { get, getAll, put } from '../db.js';
-import { linesHtml, insertText, trackCursor } from '../components.js';
+import { linesHtml, insertText, trackCursor, editLinkHtml, headRowHtml } from '../components.js';
 import { href, leaveTo } from '../router.js';
 import { attachDraft, namedFields } from '../drafts.js';
 import { toast } from '../ui.js';
@@ -28,14 +28,16 @@ export async function renderSignal(el, [color], isStale) {
     </div>
     ${current ? `
       <section class="signal-detail sig-border-${current.color}" aria-live="polite">
-        <h2 class="sig-title"><span class="sig-dot sig-${current.color}" aria-hidden="true"></span>${esc(current.name)}:${esc(current.label)}</h2>
+        ${headRowHtml(
+          `<h2 class="sig-title"><span class="sig-dot sig-${current.color}" aria-hidden="true"></span>${esc(current.name)}:${esc(current.label)}</h2>`,
+          editLinkHtml(href('signal-edit', current.color), '書きかえる'),
+        )}
         <h3 class="sig-head">どんな状態か</h3>
         <div class="sig-text">${(current.state ?? '').trim() ? linesHtml(current.state) : '<p class="sig-empty">まだ書いていません</p>'}</div>
         <h3 class="sig-head">何をするか</h3>
         <div class="sig-text">${(current.action ?? '').trim() ? linesHtml(current.action) : '<p class="sig-empty">まだ書いていません</p>'}</div>
       </section>
-      <a class="link-row" href="${href('signal-edit', current.color)}">${esc(current.name)}の内容を書きかえる ›</a>
-    ` : '<p class="hint sig-hint">色をタップすると、その色のメモが大きく出ます。</p>'}
+    ` :'<p class="hint sig-hint">色をタップすると、その色のメモが大きく出ます。</p>'}
   `;
 
   el.querySelectorAll('.sig-btn').forEach((b) => {

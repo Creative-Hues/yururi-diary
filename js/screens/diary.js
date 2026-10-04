@@ -10,7 +10,7 @@ import { getChoices } from '../choices.js';
 import { LISTS } from '../constants.js';
 import {
   dayNavHtml, bindDayNav, isDateKey, timeOf, datetimeField, readAt, sortByAt,
-  insertText, trackCursor, formActionsHtml, notFoundHtml,
+  insertText, trackCursor, formActionsHtml, notFoundHtml, editLinkHtml,
 } from '../components.js';
 import { deleteRecordWithConfirm } from '../record-dialog.js';
 import { href, leaveTo } from '../router.js';
@@ -110,7 +110,10 @@ async function diaryForm(kind, el, { rec = null, date }, isStale) {
           <p class="prompt-text">${esc(prompt)}</p>
           <button type="button" class="icon-btn prompt-clear" aria-label="お題を消す">×</button>
         </div>
-        ${prompts.length ? `<button type="button" class="btn btn-small" id="draw-prompt">🎲 ${prompt ? 'ほかのお題' : 'お題をひく'}</button>` : ''}
+        <div class="head-row prompt-row">
+          ${prompts.length ? `<button type="button" class="btn btn-small" id="draw-prompt">🎲 ${prompt ? 'ほかのお題' : 'お題をひく'}</button>` : ''}
+          ${editLinkHtml(href('edit-diary'), 'お題・書き出しを編集')}
+        </div>
       </div>
       ${starters.length ? `
         <div class="field">
@@ -125,7 +128,6 @@ async function diaryForm(kind, el, { rec = null, date }, isStale) {
       <div class="mt-field">${datetimeField(initialAt)}</div>
     </div>
     ${formActionsHtml(rec)}
-    <a class="link-row" href="${href('edit-diary')}">お題・書き出しを追加・並び替えする ›</a>
   `;
 
   const ta = el.querySelector('[name="text"]');

@@ -928,10 +928,64 @@ input[type="time"].input { min-width: 0; text-align: left; }
 .ch-day { stroke: #f3e8ec; stroke-width: 1; }
 .ch-axis { fill: #8d7b84; font-size: 10px; }
 .ch-line { fill: none; stroke: #9a5a74; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-.ch-line.dashed { stroke-dasharray: 5 4; }
 .ch-dot { fill: #9a5a74; }
-.ch-dot.hollow { fill: #fff; stroke: #9a5a74; stroke-width: 1.6; }
 .ch-val { fill: #4d3f46; font-size: 9.5px; font-weight: 700; }
+/* 2本目の線(血圧の下):水色の点線・白抜きの点。上と重なっても色と線の形で見分けられ、
+   白黒で印刷しても、点線と白抜きで見分けられる */
+.ch-line.sub { stroke: #3a96d0; stroke-dasharray: 5 4; }
+.ch-dot.sub { fill: #fff; stroke: #3a96d0; stroke-width: 1.6; }
+.ch-val.sub { fill: #2c6f9b; }
+.ch-hour { stroke: #f3e8ec; stroke-width: 1; stroke-dasharray: 2 3; }
+.ch-hour-label { fill: #b3a3ab; font-size: 8.5px; }
+.ch-pick { fill: none; stroke: var(--pink-500); stroke-width: 2; }
+
+/* 血圧の上・下の見本 */
+.ch-keys { display: inline-flex; gap: 10px; margin-left: auto; font-size: 0.75rem; font-weight: 400; color: var(--muted); }
+.ch-key { display: inline-flex; align-items: center; gap: 3px; }
+.ch-key svg { width: 24px; height: 8px; overflow: visible; }
+.rp-chart .rp-subtitle { display: flex; align-items: baseline; flex-wrap: wrap; }
+
+/* 拡大・点のタップ */
+.chart-hint { margin: 0 0 8px; font-size: 0.8rem; color: var(--muted); }
+.chart-box { position: relative; }
+.chart-stage { position: relative; border-radius: 8px; cursor: pointer; }
+.chart-box.is-zoomed .chart-stage { background: var(--pink-50); cursor: grab; }
+.chart-tools { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 4px; }
+.chart-tool {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--pink-200);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--pink-700);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.chart-tool:disabled { opacity: 0.35; }
+.chart-reset { order: -1; margin-right: auto; }
+.ch-tip {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 1px;
+  max-width: 220px;
+  padding: 6px 10px;
+  background: rgba(77, 63, 70, 0.94);
+  color: #fff;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+.ch-tip-date { font-size: 0.75rem; opacity: 0.85; }
+.ch-tip-row strong { font-size: 1rem; }
+.ch-tip-row small { margin-left: 2px; font-size: 0.75rem; }
+.ch-tip-name { display: inline-block; min-width: 1.6em; margin-right: 4px; padding: 0 5px; border-radius: 6px; background: #9a5a74; font-size: 0.75rem; text-align: center; }
+.ch-tip-row.sub .ch-tip-name { background: #3a96d0; }
 
 /* ---- 印刷(A4縦・ボタンなどは出さない) ---- */
 @media print {
@@ -948,9 +1002,11 @@ input[type="time"].input { min-width: 0; text-align: left; }
   .rp-heading { font-size: 15pt; }
   .rp-period { font-size: 12pt; }
   .rp-charts { grid-template-columns: 1fr 1fr; gap: 3mm 6mm; }
-  .rp-section > .chart { max-width: 125mm; margin: 0 auto; }
+  .rp-section > .chart-box { max-width: 125mm; margin: 0 auto; }
   .rp-chart { break-inside: avoid; }
   .rp-scroll { overflow: visible; }
+  .ch-tip, .chart-hint, .chart-tools { display: none !important; }
+  .chart-stage { background: none !important; }
 }
 
 /* =========================================================
@@ -1164,3 +1220,115 @@ input[type="time"].input { min-width: 0; text-align: left; }
 .med-detail p { margin: 0 0 2px; }
 .med-detail ul { margin: 0; padding-left: 1.3em; }
 .med-detail li { margin-bottom: 2px; }
+
+/* =========================================================
+   v0.12.0:選択肢などの編集ボタン・ヘルプ
+   ========================================================= */
+
+/* ---- 見出しの横の「✎ 選択肢を編集」(どの画面でも同じ見た目) ---- */
+.head-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 8px; margin: 0 0 10px; }
+.head-row > .section-title, .head-row > .lead, .head-row > p, .head-row > .sig-title { margin: 0 4px; }
+.group > .head-row .section-title { margin: 0 4px; }
+.field-label-row { flex-wrap: wrap; }
+.edit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  margin-left: auto;
+  min-height: 40px;
+  padding: 4px 14px 4px 11px;
+  border: 1.5px solid var(--pink-300);
+  border-radius: 999px;
+  background: var(--pink-50);
+  color: var(--pink-700);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.edit-link:active { background: var(--pink-100); }
+.edit-link svg, .edit-row-icon svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.modal .head-row { margin-bottom: 6px; }
+
+/* 設定の「選択肢・名前の編集」 */
+.edit-row-link { justify-content: flex-start; gap: 10px; }
+.row-link.edit-row-link > span.edit-row-icon { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--pink-50); border: 1.5px solid var(--pink-300); color: var(--pink-700); }
+.edit-row-title { flex: 1; }
+
+/* ---- ヘッダーの「?」(ホームだけ) ---- */
+#hdr-help { grid-column: 1; grid-row: 1; }
+#hdr-back { grid-row: 1; }
+
+/* ---- ヘルプ ---- */
+.help-list { display: grid; gap: 10px; }
+.help-item {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  scroll-margin-top: calc(72px + var(--safe-top));
+}
+.help-item summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 14px;
+  list-style: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.help-item summary::-webkit-details-marker { display: none; }
+.help-item summary:active { background: var(--pink-50); border-radius: var(--radius); }
+.help-icon { flex: none; width: 1.6em; font-size: 1.4rem; text-align: center; }
+.help-head { flex: 1; display: grid; line-height: 1.5; }
+.help-title { font-weight: 700; }
+.help-what { font-size: 0.85rem; color: var(--muted); }
+.help-chev { flex: none; color: var(--pink-500); font-size: 1.4rem; line-height: 1; transition: transform 0.15s; }
+.help-item[open] .help-chev { transform: rotate(90deg); }
+.help-item[open] summary { border-bottom: 1px dashed var(--line); }
+@media (prefers-reduced-motion: reduce) { .help-chev { transition: none; } }
+.help-body { padding: 10px 16px 16px; font-size: 0.95rem; }
+.help-where { display: grid; gap: 4px; padding: 8px 12px; background: var(--lemon); border-radius: var(--radius-sm); }
+.help-where-head { font-size: 0.8rem; font-weight: 700; color: var(--muted); }
+.help-path { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font-weight: 600; }
+.help-arrow { color: var(--pink-500); }
+.help-steps { margin: 10px 0 0; padding-left: 1.3em; }
+.help-steps > li { margin-bottom: 6px; }
+.help-sublist { margin: 4px 0 0; padding-left: 1.1em; }
+.help-sublist li { margin-bottom: 4px; }
+.help-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 8px;
+  border: 1px solid var(--pink-300);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.85em;
+  font-weight: 700;
+  line-height: 1.6;
+  white-space: nowrap;
+  vertical-align: 1px;
+}
+.help-edit { background: var(--pink-50); border-width: 1.5px; color: var(--pink-700); }
+.help-edit svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.help-grip { color: var(--pink-700); }
+.help-open { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.help-body .forgot { margin-top: 4px; }
+.help-body .forgot-title { display: none; }
+.help-body .forgot-box { background: var(--pink-50); }
+.prompt-row { justify-self: stretch; margin: 0; }
+.level-note { margin: 0 4px 8px; }

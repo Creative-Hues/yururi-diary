@@ -24,6 +24,7 @@ import { renderDay } from './screens/day.js';
 import { renderReport } from './screens/report.js';
 import { renderLockSettings } from './screens/lock.js';
 import { renderFeedback, renderFeedbackSent } from './screens/feedback.js';
+import { renderHelp } from './screens/help.js';
 
 export const ROUTES = {
   '': { title: 'ホーム', render: renderHome },
@@ -73,6 +74,7 @@ export const ROUTES = {
   report: { title: '相談用の表示', icon: '📋', render: renderReport },
 
   // 設定まわり
+  help: { title: '使い方(ヘルプ)', icon: '❓', render: renderHelp },
   settings: { title: '設定', render: renderSettings },
   backup: { title: 'バックアップ', render: renderBackup },
   'edit-condition': { title: '体調の選択肢', icon: '🍀', render: renderEditCondition },

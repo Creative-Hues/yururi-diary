@@ -7,7 +7,10 @@
 import { get, getRecordsByType, newRecord, saveRecord } from '../db.js';
 import { getChoices, addChoice, updateChoice } from '../choices.js';
 import { LISTS } from '../constants.js';
-import { datetimeField, readAt, recItem, timeOf, circled, sortByAt, parseNum, notFoundHtml, linesHtml, insertText, trackCursor } from '../components.js';
+import {
+  datetimeField, readAt, recItem, timeOf, circled, sortByAt, parseNum, notFoundHtml, linesHtml, insertText, trackCursor,
+  editLinkHtml, headRowHtml,
+} from '../components.js';
 import { numberDoses, countDoses, reachedLimit, countText } from '../doses.js';
 import { editRecordDialog } from '../record-dialog.js';
 import { deleteOneWithConfirm } from './list-editor.js';
@@ -48,7 +51,7 @@ export async function renderMedicine(el, params, isStale) {
 
   el.innerHTML = `
     ${meds.length ? `
-      <p class="lead">飲んだ薬をタップしてね</p>
+      ${headRowHtml('<p class="lead">飲んだ薬をタップしてね</p>', editLinkHtml(href('edit-medicine'), '薬を登録・編集'))}
       <div class="med-list">
         ${meds.map((m) => {
           const n = counts.get(m.id) ?? 0;
@@ -78,7 +81,6 @@ export async function renderMedicine(el, params, isStale) {
           ${g.rows.map((r) => recItem({ id: r.id, time: circled(numbers.get(r.id)), main: timeOf(r.at), sub: esc(r.data.note ?? '') })).join('')}
         </div>`).join('') : '<p class="empty">まだ記録はありません</p>'}
     </section>
-    <a class="link-row" href="${href('edit-medicine')}">薬の登録・編集 ›</a>
   `;
 
   el.querySelectorAll('.med-btn').forEach((b) => {
@@ -197,7 +199,7 @@ async function medicineForm(el, med, isStale) {
       <div class="field">
         <div class="field-label-row">
           <span class="field-label">飲むタイミング(いくつでも選べます)</span>
-          <a class="btn btn-small" href="${href('edit-med-timings')}">選択肢を編集</a>
+          ${editLinkHtml(href('edit-med-timings'), '選択肢を編集')}
         </div>
         ${timingChoices.length
           ? `<div class="chips" data-group="timings">${timingChoices.map((t) => `<button type="button" class="chip" data-timing="${esc(t.id)}" aria-pressed="${picked.has(t.id)}">${esc(t.label)}</button>`).join('')}</div>`

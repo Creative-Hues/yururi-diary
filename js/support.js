@@ -7,12 +7,13 @@ import { LISTS, moodLabel } from './constants.js';
 import { href } from './router.js';
 import { openDialog } from './ui.js';
 import { esc } from './util.js';
+import { editLinkHtml, headRowHtml } from './components.js';
 
 export async function onToughMood(level) {
   const calm = await getChoices(LISTS.calm);
 
   const body = calm.length
-    ? `<p class="small muted">よかったら(落ち着くことリスト)</p>
+    ? `${headRowHtml('<p class="small muted">よかったら(落ち着くことリスト)</p>', editLinkHtml('', 'リストを編集', { button: true, attrs: 'data-value="calm"' }))}
        <ul class="calm-list">${calm.map((c) => `<li>${esc(c.label)}</li>`).join('')}</ul>`
     : '<p class="small">ほっとできることを<button type="button" class="text-link" data-value="calm">落ち着くことリスト</button>に書いておくと、ここに出てきます。</p>';
 

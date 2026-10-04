@@ -130,7 +130,21 @@ export function formActionsHtml(rec, saveLabel = '保存する') {
     </div>`;
 }
 
-export const notFoundHtml = '<div class="card"><p>この記録は見つかりませんでした。</p></div>';
+// 選択肢・名前などを編集する画面への入り口(えんぴつ付きのボタン)。見出しの横に置き、どの画面でも同じ見た目にする。
+// to … 開く画面の href。button: true のときは <button>(ダイアログの中で data-value を付けて使う)
+export const PENCIL_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>';
+export function editLinkHtml(to, label = '選択肢を編集', { button = false, attrs = '' } = {}) {
+  return button
+    ? `<button type="button" class="edit-link" ${attrs}>${PENCIL_SVG}<span>${esc(label)}</span></button>`
+    : `<a class="edit-link" href="${esc(to)}" ${attrs}>${PENCIL_SVG}<span>${esc(label)}</span></a>`;
+}
+
+// 見出しと、その横の編集ボタン
+export function headRowHtml(headHtml, editHtml) {
+  return `<div class="head-row">${headHtml}${editHtml}</div>`;
+}
+
+export const notFoundHtml ='<div class="card"><p>この記録は見つかりませんでした。</p></div>';
 
 
 // 数値を表示用に(計算などで出る 36.800000000000004 のような端数を丸める。最大小数2桁)
