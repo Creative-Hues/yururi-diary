@@ -6,6 +6,8 @@ import { MOODS, LEVEL_MIN, LEVEL_MAX } from './constants.js';
 
 export const DEFAULT_SETTINGS = {
   vitalsPerDay: 3, // バイタルの1日の測定回数
+  // 最後のバックアップからこの日数がたったら、ホームの「バックアップ」を黄色にして知らせる(BACKUP_REMIND_OPTIONS から選ぶ)
+  backupRemindDays: 1,
   // 気分の絵文字(カレンダー・気分のボタンなど)。{ level: 絵文字 } で、変えた段階だけ入る
   moodEmojis: {},
   // 整理シートのつらさ 0〜10 の名前(11個)。空欄の段階は数字だけ出す
@@ -16,6 +18,9 @@ export const DEFAULT_SETTINGS = {
 
 export const VITALS_PER_DAY_MIN = 1;
 export const VITALS_PER_DAY_MAX = 6;
+
+// バックアップのお知らせまでの日数の選択肢
+export const BACKUP_REMIND_OPTIONS = [1, 3, 7, 14, 30];
 
 export async function getSettings() {
   const rows = await getAll('settings');

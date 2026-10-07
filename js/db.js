@@ -41,8 +41,10 @@ const migrations = {
 };
 
 let dbPromise = null;
+let closedForGood = false;
 
 export function openDB() {
+  if (closedForGood) return Promise.reject(new Error('database closed'));
   if (dbPromise) return dbPromise;
   dbPromise = new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -66,6 +68,16 @@ export function openDB() {
   return dbPromise;
 }
 
+// 「このアプリのデータを消す」の前に、この画面の接続を閉じる(読み込み直すまで、もう開かない)
+export async function closeDBForGood() {
+  closedForGood = true;
+  const p = dbPromise;
+  dbPromise = null;
+  if (p) {
+    try { (await p).close(); } catch { /* 開けていなければ何もしない */ }
+  }
+}
+
 export function reqDone(req) {
   return new Promise((resolve, reject) => {
     req.onsuccess = () => resolve(req.result);
@@ -86,8 +98,17 @@ function txDone(tx) {
 export async function withTx(stores, mode, fn) {
   const db = await openDB();
   const tx = db.transaction(stores, mode);
-  const result = fn(tx);
-  await txDone(tx);
+  const done = txDone(tx);
+  let result;
+  try {
+    result = fn(tx);
+  } catch (e) {
+    // fn の途中で例外になったら、それまでに並べた書き込み(clear など)も取り消す
+    done.catch(() => {});
+    try { tx.abort(); } catch { /* すでに終わっていれば何もしない */ }
+    throw e;
+  }
+  await done;
   return result;
 }
 

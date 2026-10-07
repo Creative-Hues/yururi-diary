@@ -246,6 +246,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .tile-backup.is-due { background: var(--lemon); border-color: #f0dc8f; }
 .tile-sub { font-size: 0.72rem; font-weight: 400; color: var(--muted); }
 .tile-due { padding: 0 8px; border-radius: 999px; background: #fff; font-size: 0.72rem; font-weight: 700; color: #8a6d00; }
+/* 今日バックアップを取った日は、みどりの印 */
+.tile-backup.is-done { background: var(--mint); border-color: #b9e3cc; }
+.tile-ok { padding: 0 8px; border-radius: 999px; background: #fff; font-size: 0.72rem; font-weight: 700; color: #2f6b4f; }
 .notice-soft { background: var(--pink-50); border-color: var(--pink-200); }
 
 /* ---- 一覧の行(設定など) ---- */
@@ -1332,3 +1335,27 @@ input[type="time"].input { min-width: 0; text-align: left; }
 .help-body .forgot-box { background: var(--pink-50); }
 .prompt-row { justify-self: stretch; margin: 0; }
 .level-note { margin: 0 4px 8px; }
+
+/* =========================================================
+   v0.13.0:バックアップ・このアプリのデータを消す
+   ========================================================= */
+
+/* 設定:名前の下に選ぶボタンが並ぶ行 */
+.row-col { flex-direction: column; align-items: stretch; gap: 10px; }
+.row-col .seg-row { width: 100%; }
+.danger-text { color: var(--danger); }
+.danger-text .muted { color: var(--muted); }
+
+/* バックアップの画面:今日取ったか */
+.backup-today { margin: 8px 0 0; font-size: 0.9rem; font-weight: 700; color: #8a6d00; }
+.backup-last.is-today { background: var(--mint); border-color: #b9e3cc; }
+.backup-last.is-today .backup-today { color: #2f6b4f; }
+
+/* このアプリのデータを消す */
+.wipe-warn { margin: 10px 0 0; padding: 8px 12px; border-radius: var(--radius-sm); background: var(--lemon); font-size: 0.9rem; }
+.lock-wipe { margin-top: 24px; }
+.forgot-last { margin-top: 8px !important; font-weight: 700; }
+/* ロック画面(z-index: 50)の上に、確認のダイアログを出す */
+.lock-screen ~ .modal-backdrop { z-index: 60; }
+/* ロック画面の確認ダイアログで出るお知らせ(「けす」と入力してください など)も見えるように */
+body:has(.lock-screen) .toast { z-index: 70; }

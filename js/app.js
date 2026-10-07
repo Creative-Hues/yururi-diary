@@ -8,7 +8,8 @@ import { startRouter, goBack } from './router.js';
 import { registerSW, applyUpdate, requestPersist } from './pwa.js';
 import { requireUnlock, watchAway } from './lock-screen.js';
 import { checkFeedbackReplies } from './feedback-setup.js';
-import { showFatal, showUpdateBar } from './ui.js';
+import { showFatal, showUpdateBar, toast } from './ui.js';
+import { takeWipedFlag } from './wipe.js';
 import { uuid, nowIso } from './util.js';
 
 // 初回起動時に、端末ごとの情報を作る
@@ -37,6 +38,7 @@ async function boot() {
   await requireUnlock();
   watchAway();
   startRouter();
+  if (takeWipedFlag()) toast('このアプリのデータを消しました');
   checkFeedbackReplies().catch(() => {});
 }
 

@@ -4,7 +4,7 @@ import { APP_VERSION } from '../config.js';
 import { feedbackEnabled, refreshFeedbackBadge } from '../feedback-setup.js';
 import { DB_VERSION, getMeta } from '../db.js';
 import { getLock } from '../lock.js';
-import { getSettings, setSetting, VITALS_PER_DAY_MIN, VITALS_PER_DAY_MAX } from '../prefs.js';
+import { getSettings, setSetting, VITALS_PER_DAY_MIN, VITALS_PER_DAY_MAX, BACKUP_REMIND_OPTIONS } from '../prefs.js';
 import { href } from '../router.js';
 import { ROUTES } from '../routes.js';
 import { canPromptInstall, promptInstall, isPersisted } from '../pwa.js';
@@ -79,6 +79,16 @@ export async function renderSettings(el, params, isStale) {
           <span>バックアップ<br><span class="small muted">最後のバックアップ:${esc(lastText)}</span></span>
           <span class="chev" aria-hidden="true">›</span>
         </a>
+        <div class="row row-col">
+          <span>バックアップのお知らせ<br><span class="small muted">最後に取ってから、この日数がたつと、ホームの「バックアップ」が黄色になります(おすすめ:1日)。</span></span>
+          <div class="seg-row seg-row-5" role="group" aria-label="バックアップのお知らせまでの日数">
+            ${BACKUP_REMIND_OPTIONS.map((d) => `<button type="button" class="seg-btn" data-remind="${d}" aria-pressed="${d === settings.backupRemindDays}">${d}日</button>`).join('')}
+          </div>
+        </div>
+        <a class="row row-link" href="${href('wipe')}">
+          <span class="danger-text">このアプリのデータを消す<br><span class="small muted">ほかのアプリやサイトのデータは消えません</span></span>
+          <span class="chev" aria-hidden="true">›</span>
+        </a>
       </div>
     </section>
 
@@ -110,6 +120,16 @@ export async function renderSettings(el, params, isStale) {
       vitals = next;
       out.textContent = vitals;
       await setSetting('vitalsPerDay', vitals);
+    });
+  });
+
+  // バックアップのお知らせまでの日数
+  el.querySelectorAll('[data-remind]').forEach((b) => {
+    b.addEventListener('click', async () => {
+      const days = Number(b.dataset.remind);
+      await setSetting('backupRemindDays', days);
+      el.querySelectorAll('[data-remind]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      toast(`${days}日にしました`);
     });
   });
 

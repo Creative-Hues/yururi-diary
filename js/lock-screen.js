@@ -6,7 +6,9 @@
 import { getLock, verifyPasscode, verifyBio, waitLeft, LOCK_NOTE, FAILS_PER_WAIT } from './lock.js';
 import { padHtml, bindPad } from './passcode-pad.js';
 import { APP_NAME } from './config.js';
-import { FORGOT_GUIDE_HTML } from './forgot-guide.js';
+import { forgotGuideHtml } from './forgot-guide.js';
+import { getMeta } from './db.js';
+import { confirmWipe, wipeAndRestart, lastBackupText } from './wipe.js';
 import { esc } from './util.js';
 
 let showing = null; // 表示中なら、ロックが外れたときに解決する Promise
@@ -46,16 +48,34 @@ function show(lock, autoBio) {
         <button type="button" class="text-link lock-forgot" id="forgot-open">パスコードを忘れたら</button>
       </div>
       <div class="lock-inner lock-guide" hidden>
-        ${FORGOT_GUIDE_HTML}
+        ${forgotGuideHtml({ onLock: true })}
         <button type="button" class="btn btn-primary btn-block" id="forgot-close">パスコードの入力にもどる</button>
+        <button type="button" class="btn btn-ghost-danger btn-block lock-wipe" id="forgot-wipe">このアプリのデータを消す</button>
       </div>`;
     // 「パスコードを忘れたら」の案内(ロック画面の中で切り替える)
     const main = wrap.querySelector('.lock-main');
     const guide = wrap.querySelector('.lock-guide');
-    wrap.querySelector('#forgot-open').addEventListener('click', () => {
+    let lastBackupAt = null;
+    wrap.querySelector('#forgot-open').addEventListener('click', async () => {
       main.hidden = true;
       guide.hidden = false;
       wrap.scrollTop = 0;
+      // どのファイルを使えばよいか分かるよう、最後のバックアップの日時だけを出す(記録の中身や件数は出さない)
+      lastBackupAt = await getMeta('lastBackupAt').catch(() => null);
+      const p = wrap.querySelector('[data-last-backup]');
+      p.textContent = `このアプリで最後にバックアップを取ったのは:${lastBackupText(lastBackupAt)}`;
+      p.hidden = false;
+    });
+    // ロックを開けずに消せるが、見られるものは何もない(消すことしかできない)。
+    // いたずら・押しまちがいで消えないよう、確認を2回出し、2回目は「けす」と入力してもらう。
+    wrap.querySelector('#forgot-wipe').addEventListener('click', async () => {
+      if (!(await confirmWipe({ lastBackupAt, typed: true }))) return;
+      try {
+        await wipeAndRestart();
+      } catch (e) {
+        console.error(e);
+        location.reload();
+      }
     });
     wrap.querySelector('#forgot-close').addEventListener('click', () => {
       guide.hidden = true;

@@ -19,7 +19,8 @@ js/routes.js           画面の一覧(準備中の画面もここ)
 js/db.js               IndexedDB
 js/seed.js             初期データ
 js/prefs.js            設定値の読み書き
-js/backup.js           バックアップの書き出し・読み込み
+js/backup.js           バックアップの書き出し・読み込み・読み込む前に戻す
+js/wipe.js             このアプリのデータだけを消す(設定とロック画面の「パスコードを忘れたら」から使う)
 js/pwa.js              Service Worker 登録・更新・ホーム画面に追加
 js/ui.js               ヘッダー・トースト・確認ダイアログ
 js/periods.js          体調の記録から、お通じの日・生理の期間を求める

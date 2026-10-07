@@ -3,9 +3,9 @@
 import { ROUTES } from '../routes.js';
 import { href } from '../router.js';
 import { getMeta } from '../db.js';
-import { BACKUP_REMIND_MONTHS } from '../config.js';
+import { getSettings } from '../prefs.js';
 import { longOpenPeriod } from '../periods.js';
-import { esc, formatDateJa, dateKey, pad2 } from '../util.js';
+import { esc, formatDateJa, daysSince, pad2 } from '../util.js';
 
 const SECTIONS = [
   // 「バックアップ」は記録の画面ではないが、空いている右下に置く(backupTile)
@@ -20,11 +20,10 @@ function tile(key, backup) {
   return `<a class="tile tile-${key}" href="${href(key)}"><span class="tile-icon" aria-hidden="true">${r.icon}</span><span class="tile-label">${esc(r.title)}</span></a>`;
 }
 
-// 前回から BACKUP_REMIND_MONTHS か月以上たったか(まだ取っていなければ、使い始めてから)
-function isDue(fromIso, now = new Date()) {
-  const d = new Date(fromIso);
-  d.setMonth(d.getMonth() + BACKUP_REMIND_MONTHS);
-  return dateKey(now) >= dateKey(d);
+// 前回から backupRemindDays 日以上たったか(一度も取っていなければ、すぐに知らせる)
+function isDue(lastIso, remindDays, now = new Date()) {
+  if (!lastIso) return true;
+  return daysSince(lastIso, now) >= remindDays;
 }
 
 // 「9/3 21:15」(今年でなければ「2025/9/3 21:15」)
@@ -35,18 +34,35 @@ function shortDateTime(iso) {
 }
 
 async function loadBackup() {
-  const [last, installedAt] = await Promise.all([getMeta('lastBackupAt'), getMeta('installedAt')]);
-  return { last, due: isDue(last ?? installedAt ?? new Date().toISOString()) };
+  const [last, settings] = await Promise.all([getMeta('lastBackupAt'), getSettings()]);
+  return {
+    last,
+    today: !!last && daysSince(last) === 0,
+    due: isDue(last, settings.backupRemindDays),
+  };
 }
 
-function backupTile({ last, due }) {
-  const when = last ? `前回 ${shortDateTime(last)}` : 'まだ取っていません';
+// 今日取ったか・まだかが、ひと目で分かるようにする
+function backupTile({ last, today, due }) {
+  const d = last ? new Date(last) : null;
+  let sub;
+  let badge;
+  let label;
+  if (today) {
+    sub = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+    badge = '<span class="tile-ok">✓ 今日取った</span>';
+    label = `バックアップ、今日 ${sub} に取りました`;
+  } else {
+    sub = last ? `前回 ${shortDateTime(last)}` : 'まだ取っていません';
+    badge = `<span class="${due ? 'tile-due' : 'tile-sub'}">今日はまだ</span>`;
+    label = `バックアップ、今日はまだ取っていません、${sub}`;
+  }
   return `
-    <a class="tile tile-backup${due ? ' is-due' : ''}" href="${href('backup')}" aria-label="${esc(`バックアップ、${when}${due ? '、そろそろバックアップを取りましょう' : ''}`)}">
+    <a class="tile tile-backup${today ? ' is-done' : due ? ' is-due' : ''}" href="${href('backup')}" aria-label="${esc(label)}">
       <span class="tile-icon" aria-hidden="true">💾</span>
       <span class="tile-label">バックアップ</span>
-      <span class="tile-sub">${esc(when)}</span>
-      ${due ? '<span class="tile-due">そろそろ取ろう</span>' : ''}
+      ${badge}
+      <span class="tile-sub">${esc(sub)}</span>
     </a>`;
 }
 

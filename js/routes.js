@@ -25,6 +25,7 @@ import { renderReport } from './screens/report.js';
 import { renderLockSettings } from './screens/lock.js';
 import { renderFeedback, renderFeedbackSent } from './screens/feedback.js';
 import { renderHelp } from './screens/help.js';
+import { renderWipe } from './screens/wipe.js';
 
 export const ROUTES = {
   '': { title: 'ホーム', render: renderHome },
@@ -77,6 +78,7 @@ export const ROUTES = {
   help: { title: '使い方(ヘルプ)', icon: '❓', render: renderHelp },
   settings: { title: '設定', render: renderSettings },
   backup: { title: 'バックアップ', render: renderBackup },
+  wipe: { title: 'このアプリのデータを消す', render: renderWipe },
   'edit-condition': { title: '体調の選択肢', icon: '🍀', render: renderEditCondition },
   'edit-medicine': { title: '薬の登録', icon: '💊', render: renderEditMedicine },
   'medicine-new': { title: '薬を登録する', render: renderMedicineNew },

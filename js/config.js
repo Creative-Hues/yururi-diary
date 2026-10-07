@@ -19,8 +19,5 @@ export const FEATURES = {
 // トークンなどはここに書かない(中継サーバーの Cloudflare の Secret にだけ置く)。
 export const FEEDBACK_RELAY_URL = 'https://feedback-relay.creative-hues.workers.dev';
 
-// 最後のバックアップからこの月数が過ぎたら、ホームの「バックアップ」のブロックでやさしく知らせる
-export const BACKUP_REMIND_MONTHS = 1;
-
 // バックアップファイルの形式バージョン(ファイルの構造を変えたら上げる)
 export const BACKUP_FORMAT = 1;
