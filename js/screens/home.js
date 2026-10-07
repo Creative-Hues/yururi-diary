@@ -5,6 +5,8 @@ import { href } from '../router.js';
 import { getMeta } from '../db.js';
 import { getSettings } from '../prefs.js';
 import { longOpenPeriod } from '../periods.js';
+import { SITE, MOVE_OPEN } from '../config.js';
+import { getMovedOut, getMovedIn, isRehearsal, hasNoRecords } from '../move.js';
 import { esc, formatDateJa, daysSince, pad2 } from '../util.js';
 
 const SECTIONS = [
@@ -66,6 +68,31 @@ function backupTile({ last, today, due }) {
     </a>`;
 }
 
+// 引っ越しのお知らせ(古いアドレス:引っ越しのお願い/済んだあと、新しいアドレス:まだ記録がないとき)
+async function moveState() {
+  if (SITE === 'old') {
+    const out = await getMovedOut();
+    if (out) return 'out-done';
+    return MOVE_OPEN || isRehearsal() ? 'out' : null;
+  }
+  if (SITE === 'new' && !(await getMovedIn()) && (await hasNoRecords())) return 'in';
+  return null;
+}
+
+function moveNotice(state) {
+  const text = {
+    out: ['📦', '新しい場所に引っ越します', '記録はそのまま持っていけます。ここを押してね'],
+    'out-done': ['📦', '引っ越しは済んでいます', '新しいアプリを使ってください'],
+    in: ['📦', '古いアプリの記録を、ここに移す', 'ファイルから読み込めます'],
+  }[state];
+  if (!text) return '';
+  return `
+    <a class="notice notice-move" href="${href(state === 'in' ? 'move-in' : 'move')}">
+      <span aria-hidden="true">${text[0]}</span>
+      <span><strong>${esc(text[1])}</strong><br><span class="small">${esc(text[2])}</span></span>
+    </a>`;
+}
+
 function periodNotice(open) {
   if (!open) return '';
   return `
@@ -76,10 +103,11 @@ function periodNotice(open) {
 }
 
 export async function renderHome(el, params, isStale) {
-  const [backup, open] = await Promise.all([loadBackup(), longOpenPeriod()]);
+  const [backup, open, move] = await Promise.all([loadBackup(), longOpenPeriod(), moveState()]);
   if (isStale()) return;
   el.innerHTML = `
     <p class="today">${formatDateJa(new Date())}</p>
+    ${moveNotice(move)}
     ${periodNotice(open)}
     <a class="signal-btn" href="${href('signal')}">
       <span class="signal-dots" aria-hidden="true"><i class="sd-blue"></i><i class="sd-yellow"></i><i class="sd-red"></i><i class="sd-black"></i></span>

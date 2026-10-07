@@ -6,7 +6,7 @@ import { confirmDialog, toast } from '../ui.js';
 import { navigate } from '../router.js';
 import { esc, formatDateTimeJa, daysSince } from '../util.js';
 
-function downloadBlob(blob, name) {
+export function downloadBlob(blob, name) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

@@ -21,6 +21,8 @@ js/seed.js             初期データ
 js/prefs.js            設定値の読み書き
 js/backup.js           バックアップの書き出し・読み込み・読み込む前に戻す
 js/wipe.js             このアプリのデータだけを消す(設定とロック画面の「パスコードを忘れたら」から使う)
+js/move.js             新しいアドレスへの引っ越し(データの受け渡し。画面は js/screens/move.js、説明は docs/move.md)
+_headers               Cloudflare Pages の応答ヘッダー
 js/pwa.js              Service Worker 登録・更新・ホーム画面に追加
 js/ui.js               ヘッダー・トースト・確認ダイアログ
 js/periods.js          体調の記録から、お通じの日・生理の期間を求める
@@ -37,7 +39,7 @@ icons/                 アイコン(tools/make-icons.mjs で作成)
 1. `js/version.js` の `APP_VERSION` を上げる(上げないと端末に新しい版が届かない)
 2. ファイルを増やしたら `sw.js` の `ASSETS` に追加する
 3. 画面やボタンの名前を変えたら、ヘルプ(`js/screens/help.js`)の説明も直す
-4. push する
+4. push する(GitHub Pages〈古いアドレス〉と Cloudflare Pages〈新しいアドレス〉の両方に自動で公開される。引っ越しは [docs/move.md](docs/move.md))
 
 ## すでに入っている記録を守る
 

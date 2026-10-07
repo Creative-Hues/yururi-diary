@@ -3,14 +3,13 @@
 
 importScripts('./js/version.js');
 
-// Cache Storage は creative-hues.github.io の他アプリと共有なので、名前に必ずアプリ名を付ける
+// Cache Storage は、古いアドレス(creative-hues.github.io)では他アプリと共有なので、名前に必ずアプリ名を付ける
 const CACHE_PREFIX = 'yururi-diary-';
 const CACHE = `${CACHE_PREFIX}${self.APP_VERSION}`;
 
 // ファイルを増やしたら、ここにも追加すること
 const ASSETS = [
   './',
-  './index.html',
   './manifest.webmanifest',
   './css/style.css',
   './css/feedback.css',
@@ -68,6 +67,8 @@ const ASSETS = [
   './js/screens/help.js',
   './js/wipe.js',
   './js/screens/wipe.js',
+  './js/move.js',
+  './js/screens/move.js',
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -98,8 +99,10 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
 
+  // 画面を開くときは、いつも保存しておいた「./」(index.html)を返す。
+  // Cloudflare Pages は /index.html を / に転送するため、転送された応答を返さないよう「./」で保存している。
   if (req.mode === 'navigate') {
-    e.respondWith(caches.match('./index.html', { cacheName: CACHE }).then((r) => r || fetch(req)));
+    e.respondWith(caches.match('./', { cacheName: CACHE }).then((r) => r || fetch(req)));
     return;
   }
   e.respondWith(caches.match(req, { cacheName: CACHE, ignoreSearch: true }).then((r) => r || fetch(req)));

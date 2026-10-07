@@ -1,0 +1,11 @@
+# Cloudflare Pages の応答ヘッダー(GitHub Pages では使われない)。説明は docs/move.md
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  X-Frame-Options: DENY
+
+# 更新がすぐ届くよう、Service Worker と版の番号は毎回確かめる
+/sw.js
+  Cache-Control: no-cache
+/js/version.js
+  Cache-Control: no-cache
