@@ -9,7 +9,7 @@
 // どちらも、相手のアドレス(origin)と、開いた/開かれた窓であることを確かめてから受け取る。
 
 import { OLD_ORIGIN, NEW_ORIGIN, STORAGE_PREFIX } from './config.js';
-import { BACKUP_STORES, KEY_PATHS, getAll, getMeta, setMeta, withTx, count } from './db.js';
+import { BACKUP_STORES, KEY_PATHS, getAll, getMeta, setMeta, withTx, count, del } from './db.js';
 import { buildBackup, parseBackup, restoreBackup } from './backup.js';
 import { nowIso } from './util.js';
 
@@ -50,6 +50,16 @@ export const isRehearsal = () => session.get(REHEARSAL_KEY) === '1';
 // 「今は引っ越さずに使う」を押したら、このタブを閉じるまで自動では出さない
 export const skipMoveForNow = () => session.set(SKIP_KEY, '1');
 export const isMoveSkipped = () => session.get(SKIP_KEY) === '1';
+
+// 開発者用:古いアドレスに「?old-dev」を付けて開くと、そのタブの中だけ、引っ越しが済んでいても
+// これまでどおり使える(案内だけの画面にしない)。引っ越し済みの印を外すこともできる(#/move)。
+// 本人向けの画面やヘルプには出さない。
+const DEV_KEY = `${STORAGE_PREFIX}old-dev`;
+export function noteDevOld() {
+  if (new URLSearchParams(location.search).has('old-dev')) session.set(DEV_KEY, '1');
+}
+export const isDevOld = () => session.get(DEV_KEY) === '1';
+export const clearMovedOut = () => del('meta', 'movedOut');
 
 // 新しいアプリの窓 win に記録を渡す。win から hello が来るたびに渡す(新しいアプリが読み込み直しても大丈夫)。
 // 戻り値は、待つのをやめる関数。

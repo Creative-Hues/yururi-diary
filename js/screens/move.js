@@ -2,16 +2,16 @@
 // renderMoveOut … 古いアドレスのアプリ:ファイルを保存 → 新しいアプリを開いて記録を渡す
 // renderMoveIn  … 新しいアドレスのアプリ:記録を受け取る。受け取れなければ「ファイルから読み込む」
 
-import { NEW_URL, SITE } from '../config.js';
+import { NEW_URL, SITE, APP_NAME } from '../config.js';
 import { makeBackupFile, markBackedUp, parseBackup, summarize } from '../backup.js';
 import {
-  serveMove, getMovedOut, markMovedByFile, skipMoveForNow,
+  serveMove, getMovedOut, markMovedByFile, skipMoveForNow, isDevOld, clearMovedOut,
   waitForOldApp, applyDirect, applyFile, getMovedIn, hasNoRecords,
 } from '../move.js';
 import { canPromptInstall, promptInstall } from '../pwa.js';
 import { downloadBlob } from './backup.js';
 import { confirmDialog, toast } from '../ui.js';
-import { href, navigate } from '../router.js';
+import { href, navigate, stopRouter } from '../router.js';
 import { esc, formatDateTimeJa, isStandalone } from '../util.js';
 
 const n = (counts) => counts?.records ?? 0;
@@ -22,6 +22,7 @@ export async function renderMoveOut(el, params, isStale) {
   if (SITE === 'new') return navigate('move-in');
   const moved = await getMovedOut();
   if (isStale()) return;
+  if (moved && !isDevOld()) return enterMovedMode();
 
   el.innerHTML = `
     ${moved ? `
@@ -30,7 +31,7 @@ export async function renderMoveOut(el, params, isStale) {
         <p>${esc(formatDateTimeJa(new Date(moved.at)))}${moved.counts ? `(記録 ${n(moved.counts)}件)` : '(ファイルで移しました)'}</p>
         <p>これからは<strong>新しいアプリ</strong>を使ってください。</p>
         <a class="btn btn-primary btn-block" href="${esc(NEW_URL)}" target="_blank" rel="opener">新しいアプリを開く</a>
-        <p class="hint">こちらの記録は、念のため、しばらくそのまま残しておきます。消さないでください。</p>
+        <p class="hint">開発者用(?old-dev)で開いています。本人の画面では、この画面の代わりに案内だけの画面が出ます。</p>
       </div>` : `
       <div class="card">
         <p class="big-text">ゆる〜り日記は、新しい場所に引っ越します</p>
@@ -60,7 +61,9 @@ export async function renderMoveOut(el, params, isStale) {
       </div>
     </section>
 
-    <button type="button" class="btn btn-block mt-group" id="move-skip">${moved ? '今はこちらのアプリを使う' : '今は引っ越さずに使う'}</button>
+    ${moved
+    ? '<button type="button" class="btn btn-ghost-danger btn-block mt-group" id="move-unmark">(開発者用)引っ越し済みの印を外す</button>'
+    : '<button type="button" class="btn btn-block mt-group" id="move-skip">今は引っ越さずに使う</button>'}
   `;
 
   const saveBtn = el.querySelector('#move-save');
@@ -112,6 +115,8 @@ export async function renderMoveOut(el, params, isStale) {
         if (isStale()) return;
         setStatus(`✓ 引っ越しできました(記録 ${n(m.counts)}件)。新しいアプリを使ってください。`, 'is-ok');
         fileCard.hidden = true;
+        // 済んだら、この古いアプリでは記録できないようにする(記録が新旧に分かれないように)
+        if (!isDevOld()) enterMovedMode();
       },
       onFail: (msg) => {
         setStatus(`${msg}。下の「自動で移らなかったときは」の方法で移してください。`, 'is-error');
@@ -128,15 +133,86 @@ export async function renderMoveOut(el, params, isStale) {
     });
     if (!ok) return;
     await markMovedByFile();
+    if (!isDevOld()) return enterMovedMode();
     if (!isStale()) renderMoveOut(el, params, isStale);
   });
 
-  el.querySelector('#move-skip').addEventListener('click', () => {
+  el.querySelector('#move-skip')?.addEventListener('click', () => {
     skipMoveForNow();
     location.replace('#/');
   });
 
+  el.querySelector('#move-unmark')?.addEventListener('click', async () => {
+    const ok = await confirmDialog({
+      title: '引っ越し済みの印を外しますか?',
+      message: '外すと、このアプリはまた記録できるようになります(記録は変わりません)。\n本人の端末で使うと、記録が新旧に分かれるので気をつけてください。',
+      ok: '外す',
+      danger: true,
+    });
+    if (!ok) return;
+    await clearMovedOut();
+    toast('印を外しました');
+    location.replace('#/');
+  });
+
   return () => { stop?.(); clearTimeout(fileTimer); };
+}
+
+// ---- 引っ越しが済んだ古いアプリ:案内だけの画面 ----
+// 記録の画面には行けないようにする(古いアイコンから開いて記録すると、記録が新旧2つに分かれるため)。
+// できるのは「新しいアプリを開く」と「バックアップを書き出す」だけ。古い記録は予備として消さずに残す。
+
+let movedMode = false;
+
+export async function enterMovedMode() {
+  if (movedMode) return;
+  movedMode = true;
+  stopRouter();
+  document.querySelector('.modal-backdrop')?.remove();
+  const $ = (sel) => document.querySelector(sel);
+  $('#hdr-title').textContent = APP_NAME;
+  $('#hdr-back').hidden = true;
+  $('#hdr-settings').hidden = true;
+  $('#hdr-help').hidden = true;
+  document.title = APP_NAME;
+  const el = $('#view');
+  const moved = await getMovedOut();
+  const android = /Android/.test(navigator.userAgent);
+  el.innerHTML = `
+    <div class="card move-done">
+      <p class="big-text">✓ 新しいアプリに引っ越しました</p>
+      ${moved ? `<p class="small">${esc(formatDateTimeJa(new Date(moved.at)))}${moved.counts ? `(記録 ${n(moved.counts)}件)` : ''}</p>` : ''}
+      <p>記録は<strong>新しいアプリ</strong>でつけてください。こちらのアプリでは、もう記録できません。</p>
+      <a class="btn btn-primary btn-block btn-big" href="${esc(NEW_URL)}" target="_blank" rel="opener">新しいアプリを開く</a>
+    </div>
+
+    <div class="card move-step">
+      <p class="move-step-head">古いアイコンはホーム画面から外してね</p>
+      <p>まちがえて開かないように、この古いアプリのアイコンはホーム画面から外してください。記録はしばらく残しておきます。</p>
+      ${android ? '<p class="small muted">アイコンを長押しして、画面の上の「削除」まで動かします(「アンインストール」ではなく「削除」)。データを消すか聞かれたら、消さないでください。</p>' : ''}
+    </div>
+
+    <div class="card move-step">
+      <p class="move-step-head">バックアップを書き出す</p>
+      <p>こちらに残っている記録を、ファイルにして保存します。</p>
+      <button type="button" class="btn btn-block" id="moved-export">バックアップを書き出す</button>
+      <p class="move-saved" id="moved-saved" hidden></p>
+    </div>
+  `;
+  window.scrollTo(0, 0);
+  el.querySelector('#moved-export').addEventListener('click', async () => {
+    try {
+      const { blob, name } = await makeBackupFile();
+      downloadBlob(blob, name);
+      await markBackedUp();
+      const p = el.querySelector('#moved-saved');
+      p.textContent = `✓ 保存しました:${name}`;
+      p.hidden = false;
+    } catch (e) {
+      console.error(e);
+      toast('保存できませんでした');
+    }
+  });
 }
 
 // ---- 新しいアプリ ----

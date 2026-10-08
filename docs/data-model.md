@@ -27,7 +27,7 @@
 | `seedVersion` | 初期データをどこまで入れたか |
 | `lastBackupAt` | 最後にバックアップした日時(ISO)。ホームの「バックアップ」のブロックに「✓ 今日取った」/「今日はまだ」を出し、settings の `backupRemindDays` 日以上たったら(一度も取っていなければ、すぐに)黄色にする。書き出し・共有で保存・ファイルの読み込みで更新し、「読み込む前に戻す」では変えない |
 | `importUndo` | 「読み込む前に戻す」用にとっておいた記録 `{ kind, savedAt, backup }`(v0.13.0)。kind は `"beforeImport"`(読み込む前の記録)/ `"beforeUndo"`(戻す前の記録)。backup はバックアップファイルと同じ形。最新の1回分だけ |
-| `movedOut` | 古いアドレスのアプリで、引っ越しが済んだ記録 `{ at, to, counts, how }`(v0.14.0)。how は `"direct"`(直接渡せた。counts は件数)/ `"file"`(本人が「新しいアプリで読み込めた」を押した)。あると起動時に「引っ越しは済んでいます」の画面で開く。説明は docs/move.md |
+| `movedOut` | 古いアドレスのアプリで、引っ越しが済んだ記録 `{ at, to, counts, how }`(v0.14.0)。how は `"direct"`(直接渡せた。counts は件数)/ `"file"`(本人が「新しいアプリで読み込めた」を押した)。あると、古いアプリは記録できない案内だけの画面になる(?old-dev で開いたタブを除く)。説明は docs/move.md |
 | `movedIn` | 新しいアドレスのアプリで、古いアプリから記録を受け取った記録 `{ at, from, counts, how, lock }`(v0.14.0) |
 | `lock` | ロックの設定 `{ enabled, hash, salt, iterations, credentialId, timeoutMin, failCount, waitUntil }`(説明は docs/lock.md) |
 

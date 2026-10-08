@@ -116,3 +116,8 @@ export function startRouter() {
   window.addEventListener('hashchange', render);
   render();
 }
+
+// 画面の切り替えをやめる(引っ越しが済んだ古いアプリを、案内だけの画面にするとき)
+export function stopRouter() {
+  window.removeEventListener('hashchange', render);
+}

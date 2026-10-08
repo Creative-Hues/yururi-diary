@@ -1374,4 +1374,4 @@ body:has(.lock-screen) .toast { z-index: 70; }
 .move-pick-help { margin: 0; padding-left: 1.3em; line-height: 1.6; }
 .move-pick-help li + li { margin-top: 6px; }
 .move-fname { word-break: break-all; }
-.move-step + .move-step { margin-top: 12px; }
+.move-step + .move-step, .move-done + .move-step { margin-top: 12px; }
