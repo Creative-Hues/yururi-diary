@@ -34,4 +34,4 @@ export const NEW_URL = `${NEW_ORIGIN}/`;
 export const SITE = self.location?.origin === OLD_ORIGIN ? 'old' : self.location?.origin === NEW_ORIGIN ? 'new' : 'other';
 // true にすると、古いアドレスのアプリを開いたときに引っ越しの画面を出す(本番の引っ越しの日に切りかえる)。
 // false の間も、古いアドレスに「?move」を付けて開けば、そのタブの中だけ引っ越しの画面を試せる(リハーサル用)。
-export const MOVE_OPEN = false;
+export const MOVE_OPEN = true;

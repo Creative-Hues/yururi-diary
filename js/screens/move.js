@@ -357,7 +357,7 @@ function renderDone(el, counts, { how, lock = false, hadBio = false }) {
             <button type="button" class="btn btn-primary btn-block" id="move-install">ホーム画面に追加</button>` : `
             <p>${ios
               ? '下の共有ボタン(□に↑)→「ホーム画面に追加」を押します。'
-              : 'Chrome の右上の「⋮」→「ホーム画面に追加」(または「アプリをインストール」)を押します。'}</p>`}
+              : '右上の「⋮」→「ホーム画面に追加」(または「アプリをインストール」)を押します。見当たらないときは、先に「⋮」→「Chrome で開く」を押してから、もう一度「⋮」を開きます。'}</p>`}
           <p class="hint">これからは、新しく追加したアイコンから開いてください。古いアイコンは、しばらく残しておいてください。</p>
         </div>`}
       <div class="card move-step">
